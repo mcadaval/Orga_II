@@ -27,7 +27,12 @@
 *.i*86
 *.x86_64
 *.hex
+bmpdif
+tp2
 
 # Debug files
 *.dSYM/
 *.su
+
+# Pictures
+*.bmp
