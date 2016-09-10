@@ -15,7 +15,7 @@ DIFFFLAGS = ""
 
 corridas = [
     {'filtro': 'colorizar', 'tolerancia': 10, 'params': '0.5'},
-    {'filtro': 'combinar', 'tolerancia': 5, 'params': '0.3'},
+    {'filtro': 'combinar', 'tolerancia': 5, 'params': '128.0'},
     {'filtro': 'pixelar', 'tolerancia': 5, 'params': ''},
     {'filtro': 'rotar', 'tolerancia': 0, 'params': ''},
     {'filtro': 'smalltiles', 'tolerancia': 0, 'params': ''}
