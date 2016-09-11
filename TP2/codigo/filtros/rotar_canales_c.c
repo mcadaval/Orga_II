@@ -10,9 +10,10 @@ void rotar_c (unsigned char *src, unsigned char *dst, int cols, int filas, int s
 			bgra_t *p_d = (bgra_t*) &dst_matrix[f][c * 4];
             bgra_t *p_s = (bgra_t*) &src_matrix[f][c * 4];
 
-			p_d->b = p_s->g;
-			p_d->g = p_s->r;
+			
 			p_d->r = p_s->b;
+			p_d->g = p_s->r;
+			p_d->b = p_s->g;
 			p_d->a = p_s->a;
 
 		}
