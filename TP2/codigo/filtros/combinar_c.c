@@ -28,7 +28,7 @@ void combinar_c (
 			bgra_t copia;
 			copia = *p_d2;  
 			*p_d2 = *p_d;  // muevo los pixels del final al principio de cada fila
-			*p_d = copia;  // muevo los pixeles del principio al final de cada fila			
+			*p_d = copia;  // muevo los pixeles del principio al final de cada fila		
 		}
 	}
 

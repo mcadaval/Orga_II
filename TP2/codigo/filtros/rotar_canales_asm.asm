@@ -23,7 +23,7 @@ rotar_asm:
 	mov eax,edx 			;eax = edx (columnas)
 	mul ecx     			;eax = edx * ecx (columnas * filas)
 	mov ebx,4
-	div ebx					;eax = eax / ebx ((columnas * filas )/ 16)
+	div ebx					;eax = eax / ebx ((columnas * filas )/ 4)
 	movdqu xmm3,[mascara] 	;muevo a xmm1  el contendio de la mascara para acceder 1 sola vez a memoria
 	.ciclo:
 	cmp eax,0
