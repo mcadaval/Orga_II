@@ -42,10 +42,12 @@ combinar_asm:
 	cmp r14d,ecx  ; i < filas
 	je .fin
 	mov rax,r14         ;rax = i
-	mul r9              ; rax = i*src_row_size
-	mov r12,rax         ; r12 = i*src_row_size
+	mul r13             ;rax = i*src_row_size
+	mov r12,rax         ;r12 = i*src_row_size
 	lea rsi,[rsi+r12]  	;cargo la fila correcta
-	lea rbx,[rbx+r12] 	;cargo la fila correcta 
+	lea rbx,[rbx+r12] 	;cargo la fila correcta
+	mov r10,rsi         ;guardo en r10 la dir de rsi una vez posicionado en la fila
+	mov r11,rbx 		;guardo en r11 el la dir de rbx una vez posicionado en la fila
 	add rbx,r9          ;rbx pasa al final de la fila
 	sub rbx,16          ;rbx se posiciona al comienzo de los ultimos 4 pixeles de la fila
 	
@@ -62,6 +64,13 @@ combinar_asm:
 		add rsi,16
 		sub rbx,16
 		add r15d,16
+		cmp r15d,r13d
+		jne .sigo          ;si estoy en la ultima iteracion del ciclointerno
+		mov rsi,r10        ;restauro el valor original de rsi antes de entrar al ciclo interno   
+		mov rbx,r11        ;restauro el valor original en rbx antes de entrar al ciclo interno  
+		;esto es para que en la proxima iteracion del ciclo externo cuando se cargue en rsi,rbx_
+		;las filas correctas lo haga desde la posicion que tenia antes de entar al ciclo interno(antes de ser modificados en otras palabras)
+		.sigo:
 		jmp .ciclointerno
 
 	;sub rsp, 8
