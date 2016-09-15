@@ -32,50 +32,35 @@ combinar_asm:
 	push rbx
 	push r12
 	push r13
-	push r14  ;contador de filas
-	push r15  ;contador de columnas
+	push r14  						;contador de filas
+	push r15  						;contador de columnas
+	sub rsp,8
 
 	xor r12,r12
 	xor r13,r13
 	xor r14,r14
 	xor r15,r15
-	xor rax,rax
-
-	mov rbx,rsi 	;creo una copia del puntero a dst 
-	mov r12d,r9d
-	shr r12d,1      ;muevo a r12d = dst_row_size/2 (media fila) lo que aumentara rsi con cada iteracion externa (cuando cambia de fila)
-	mov r13d,r9d
-	add r13d,r12d 	;muevo a r13d = dst_row_size/2 + dst_row_size (una fila y media) lo que aumentara rbx con cada iteracion externa (cuando cambia de fila)
-	lea rbx,[rbx+r9] ;voy hasta alfinal de la fila 
-	sub rbx,16       ;reapunto rbx a los ultimos 4 pixeles de la fila 
-	
-	shr r9d,3        ; r8d =  dst_row_size/8
+	xor rbx,rbx
 
 	pshufd xmm0,xmm0, 00000000b 	; xmm0 = alpha | alpha | alpha | alpha |  (alineo el alpha para multiplicar cada pixel en el xmm)
 	movdqu xmm3,[cte_255]           ; xmm3 = 255.0 | 255.0 | 255.0 | 255.0
 	divps xmm0 ,xmm3                ; xmm0 = alpha / 255.0 | alpha / 255.0 | alpha 255.0 | alpha / 255.0
 	pxor xmm15,xmm15
 	
-	.cicloexterno:
-	cmp r14d,ecx      ; i < filas
-	je .fin
-	xor rax,rax
-	mov eax,r14d      ; eax = i
-	mul r12d          ; eax = i * dst_row_size/2
-	mov r10,rax
-	xor rax,rax
-	mov eax,r14d      ; eax = i
-	mul r13d          ; eax = i * (dst_row_size/2 + dst_row_size)
-	mov r11,rax       ; r11 = i * (dst_row_size/2 + dst_row_size)
-	lea rdi,[rdi+r10] ;rdi apunta al principio de la fila actual
-	lea rsi,[rsi+r10] ;rsi apunta al principio de la fila actual
-	lea rbx,[rbx+r11] ;rbx apunta al final de la fla actual
-	sub rbx,16        ;rbx apunta a los ultimos 4 pixeles de la fila
+	mov r12d,edx                    ;r12d =  cols
+	shr r12d,2                      ;r12d = cols/4   (cantidad de iteraciones en ciclo interno)
+	mov r13d,r8d                    ;r13d = src_row_size
 	
-	add r14d,1        ;aumento 1 en las filas
+	.cicloexterno:
+	cmp r14d,ecx					; i < filas	
+	je .fin
+	mov rbx,rdi                     ;muevo a rbx la direccion de la fila actual
+	lea rbx,[rbx+r13]               ;actualizo rbx al final de la fila actual
+	sub rbx,16                      ;reapunto rbx a los ultimos 4 pixeles       
+	add r14d,1                      ;incremento  la fila para la proxima iteracion
 
 		.ciclointerno:
-		cmp r15d,r9d          	; j < dst_row_size/8  
+		cmp r15d,r12d          	; j < cols/4  
 		movdqu xmm1,[rdi]       ; xmm1 =  P3 | P2 | P1 | P0 |
 		movdqu xmm2,[rbx]       ; xmm2 =  Pn | P(n-1) | P(n-2) | P(n-3) |
 
@@ -129,20 +114,22 @@ combinar_asm:
 		paddb xmm5,xmm9
 		paddb xmm4,xmm8
 		paddb xmm6,xmm10
-
+	
 		packusdw xmm1,xmm5   ; xmm1 = 0 | A'1 | 0 | R'1 | 0 | G'1 | 0 | B'1 | 0 | A'0 | 0 | R'0 | 0 | G'0 | 0 | B'0 
 		packusdw xmm4,xmm6	 ; xmm4 = 0 | A'3 | 0 | R'3 | 0 | G'3 | 0 | B'3 | 0 | A'2 | 0 | R'2 | 0 | G'2 | 0 | B'2 
 
-		packuswb xmm1,xmm4   ; xmm1 = P'3 | P'2 | P'1 | P'0
+		packuswb xmm1,xmm5   ; xmm1 = P'3 | P'2 | P'1 | P'0
 
 		movdqu [rsi],xmm1    ; rsi = P'0,P'1,P'2,P'3...
 
 		add rsi,16             ; rsi suma 16 B
 		add rdi,16             ; rdi suma 16 B para avanzar a los siguientes 4 pixeles
 		sub rbx,16             ; rbx resta 16B para retroceder a los siguientes 4 pixeles
+		add r15d,1             ;aumento el contador
 		jmp .ciclointerno
 
 	.fin:
+	add rsp,8
 	pop r15
 	pop r14
 	pop r13
