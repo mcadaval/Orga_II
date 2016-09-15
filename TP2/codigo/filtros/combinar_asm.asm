@@ -53,14 +53,15 @@ combinar_asm:
 	
 	.cicloexterno:
 	cmp r14d,ecx					; i < filas	
-	je .fin
+	jge .fin
 	mov rbx,rdi                     ;muevo a rbx la direccion de la fila actual
 	lea rbx,[rbx+r13]               ;actualizo rbx al final de la fila actual
 	sub rbx,16                      ;reapunto rbx a los ultimos 4 pixeles       
 	add r14d,1                      ;incremento  la fila para la proxima iteracion
 
 		.ciclointerno:
-		cmp r15d,r12d          	; j < cols/4  
+		cmp r15d,r12d          	; j < cols/4
+		jge .cicloexterno  
 		movdqu xmm1,[rdi]       ; xmm1 =  P3 | P2 | P1 | P0 |
 		movdqu xmm2,[rbx]       ; xmm2 =  Pn | P(n-1) | P(n-2) | P(n-3) |
 
