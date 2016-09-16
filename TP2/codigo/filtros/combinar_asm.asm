@@ -39,11 +39,10 @@ combinar_asm:
 	xor r12,r12
 	xor r13,r13
 	xor r14,r14
-	xor r15,r15
 	xor rbx,rbx
 
 	pshufd xmm0,xmm0, 00000000b 	; xmm0 = alpha | alpha | alpha | alpha |  (alineo el alpha para multiplicar cada pixel en el xmm)
-	movdqu xmm3,[cte_255]           ; xmm3 = 255.0 | 255.0 | 255.0 | 255.0
+	movups xmm3,[cte_255]           ; xmm3 = 255.0 | 255.0 | 255.0 | 255.0
 	divps xmm0 ,xmm3                ; xmm0 = alpha / 255.0 | alpha / 255.0 | alpha 255.0 | alpha / 255.0
 	pxor xmm15,xmm15
 	
@@ -52,12 +51,13 @@ combinar_asm:
 	mov r13d,r8d                    ;r13d = src_row_size
 	
 	.cicloexterno:
+	xor r15,r15 										;pongo columnas en 0
 	cmp r14d,ecx					; i < filas	
 	jge .fin
 	mov rbx,rdi                     ;muevo a rbx la direccion de la fila actual
 	lea rbx,[rbx+r13]               ;actualizo rbx al final de la fila actual
 	sub rbx,16                      ;reapunto rbx a los ultimos 4 pixeles       
-	add r14d,1                      ;incremento  la fila para la proxima iteracion
+	add r14d,1                      ;incremento la fila para la proxima iteracion
 
 		.ciclointerno:
 		cmp r15d,r12d          	; j < cols/4
@@ -96,7 +96,7 @@ combinar_asm:
 		psubb xmm6,xmm10       ; xmm6 = 0 | 0 | 0 | A3 -An   | 0 | 0 | 0 | R3 - Rn   | 0 | 0 | 0 | G3 - Gn   | 0 | 0 | 0 | B3 - Bn 
 
 		cvtdq2ps xmm1,xmm1     ; (float) xmm1 = 0 | 0 | 0 | A0 -An-3 | 0 | 0 | 0 | R0 - Rn-3 | 0 | 0 | 0 | G0 - Gn-3 | 0 | 0 | 0 | B0 - Bn-3
-		cvtdq2ps xmm5,xmm15    ; (float) xmm5 = 0 | 0 | 0 | A1 -An-2 | 0 | 0 | 0 | R1 - Rn-2 | 0 | 0 | 0 | G1 - Gn-2 | 0 | 0 | 0 | B1 - Bn-2
+		cvtdq2ps xmm5,xmm5    ; (float) xmm5 = 0 | 0 | 0 | A1 -An-2 | 0 | 0 | 0 | R1 - Rn-2 | 0 | 0 | 0 | G1 - Gn-2 | 0 | 0 | 0 | B1 - Bn-2
 		cvtdq2ps xmm4,xmm4     ; (float) xmm4 = 0 | 0 | 0 | A2 -An-1 | 0 | 0 | 0 | R2 - Rn-1 | 0 | 0 | 0 | G2 - Gn-1 | 0 | 0 | 0 | B2 - Bn-1
 		cvtdq2ps xmm6,xmm6	   ; (float) xmm6 = 0 | 0 | 0 | A3 -An   | 0 | 0 | 0 | R3 - Rn   | 0 | 0 | 0 | G3 - Gn   | 0 | 0 | 0 | B3 - Bn 
 
