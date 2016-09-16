@@ -90,10 +90,10 @@ combinar_asm:
 		punpcklwd xmm8,xmm15   ; xmm8 = 0 | 0 | 0 | An-1 | 0 | 0 | 0 | Rn-1 | 0 | 0 | 0 | Gn-1 | 0 | 0 | 0 | Bn-1
 		punpckhwd xmm10,xmm15  ;xmm10 = 0 | 0 | 0 | An | 0 | 0 | 0 | Rn | 0 | 0 | 0 | Gn | 0 | 0 | 0 | Bn
 
-		psubb xmm1,xmm7        ; xmm1 = 0 | 0 | 0 | A0 -An-3 | 0 | 0 | 0 | R0 - Rn-3 | 0 | 0 | 0 | G0 - Gn-3 | 0 | 0 | 0 | B0 - Bn-3
-		psubb xmm5,xmm9		   ; xmm5 = 0 | 0 | 0 | A1 -An-2 | 0 | 0 | 0 | R1 - Rn-2 | 0 | 0 | 0 | G1 - Gn-2 | 0 | 0 | 0 | B1 - Bn-2
-		psubb xmm4,xmm8        ; xmm4 = 0 | 0 | 0 | A2 -An-1 | 0 | 0 | 0 | R2 - Rn-1 | 0 | 0 | 0 | G2 - Gn-1 | 0 | 0 | 0 | B2 - Bn-1
-		psubb xmm6,xmm10       ; xmm6 = 0 | 0 | 0 | A3 -An   | 0 | 0 | 0 | R3 - Rn   | 0 | 0 | 0 | G3 - Gn   | 0 | 0 | 0 | B3 - Bn 
+		psubd xmm1,xmm10         ; xmm1 = 0 | 0 | 0 | A0 -An-3 | 0 | 0 | 0 | R0 - Rn-3 | 0 | 0 | 0 | G0 - Gn-3 | 0 | 0 | 0 | B0 - Bn-3
+		psubd xmm5,xmm8	   ; xmm5 = 0 | 0 | 0 | A1 -An-2 | 0 | 0 | 0 | R1 - Rn-2 | 0 | 0 | 0 | G1 - Gn-2 | 0 | 0 | 0 | B1 - Bn-2
+		psubd xmm4,xmm9      ; xmm4 = 0 | 0 | 0 | A2 -An-1 | 0 | 0 | 0 | R2 - Rn-1 | 0 | 0 | 0 | G2 - Gn-1 | 0 | 0 | 0 | B2 - Bn-1
+		psubd xmm6,xmm7       ; xmm6 = 0 | 0 | 0 | A3 -An   | 0 | 0 | 0 | R3 - Rn   | 0 | 0 | 0 | G3 - Gn   | 0 | 0 | 0 | B3 - Bn 
 
 		cvtdq2ps xmm1,xmm1     ; (float) xmm1 = 0 | 0 | 0 | A0 -An-3 | 0 | 0 | 0 | R0 - Rn-3 | 0 | 0 | 0 | G0 - Gn-3 | 0 | 0 | 0 | B0 - Bn-3
 		cvtdq2ps xmm5,xmm5    ; (float) xmm5 = 0 | 0 | 0 | A1 -An-2 | 0 | 0 | 0 | R1 - Rn-2 | 0 | 0 | 0 | G1 - Gn-2 | 0 | 0 | 0 | B1 - Bn-2
@@ -111,15 +111,21 @@ combinar_asm:
 		cvtps2dq xmm4,xmm4
 		cvtps2dq xmm6,xmm6
 
-		paddb xmm1,xmm7      ; (int) xmm1 = 0 | 0 | 0 | (A0 -An-3) * alpha/255.0 + An-3 = (A'0) | 0 | 0 | 0 | (R0 - Rn-3) * alpha/255.0 + Rn-3 = (R'0)| 0 | 0 | 0 | (G0 - Gn-3) * alpha/255.0 + Gn-3 = (G'0)| 0 | 0 | 0 | (B0 - Bn-3) *  alpha/255.0 + Bn-3  =(B'0)
-		paddb xmm5,xmm9
-		paddb xmm4,xmm8
-		paddb xmm6,xmm10
+		paddd xmm1,xmm10     ; (int) xmm1 = 0 | 0 | 0 | (A0 -An-3) * alpha/255.0 + An-3 = (A'0) | 0 | 0 | 0 | (R0 - Rn-3) * alpha/255.0 + Rn-3 = (R'0)| 0 | 0 | 0 | (G0 - Gn-3) * alpha/255.0 + Gn-3 = (G'0)| 0 | 0 | 0 | (B0 - Bn-3) *  alpha/255.0 + Bn-3  =(B'0)
+		paddd xmm5,xmm8
+		paddd xmm4,xmm9
+		paddd xmm6,xmm7
 	
-		packusdw xmm1,xmm5   ; xmm1 = 0 | A'1 | 0 | R'1 | 0 | G'1 | 0 | B'1 | 0 | A'0 | 0 | R'0 | 0 | G'0 | 0 | B'0 
-		packusdw xmm4,xmm6	 ; xmm4 = 0 | A'3 | 0 | R'3 | 0 | G'3 | 0 | B'3 | 0 | A'2 | 0 | R'2 | 0 | G'2 | 0 | B'2 
+		
+		;xmm1 = P'0
+		;xmm5 = P'1
+		;xmm4 = P'2
+		;xmm6 = P'3
 
-		packuswb xmm1,xmm5   ; xmm1 = P'3 | P'2 | P'1 | P'0
+		packusdw xmm1,xmm5   ; xmm1 = 0 | A'1 | 0 | R'1 | 0 | G'1 | 0 | B'1 | 0 | A'0 | 0 | R'0 | 0 | G'0 | 0 | B'0  = P'1 | P'0
+		packusdw xmm4,xmm6	 ; xmm4 = 0 | A'3 | 0 | R'3 | 0 | G'3 | 0 | B'3 | 0 | A'2 | 0 | R'2 | 0 | G'2 | 0 | B'2  = P'3 | P'2
+
+		packuswb xmm1,xmm4   ; xmm5 = P'3 | P'2 | P'1 | P'0
 
 		movdqu [rsi],xmm1    ; rsi = P'0,P'1,P'2,P'3...
 
