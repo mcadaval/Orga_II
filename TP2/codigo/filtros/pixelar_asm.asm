@@ -24,7 +24,7 @@ section .data
 mascara_pixel1: db 0x4, 0x5, 0x6, 0x7, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
 mascara_pixel2: db 0x8, 0x9, 0xA, 0xB, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
 mascara_pixel3: db 0xC, 0xD, 0xE, 0xF, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-cte_4 : db 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
+cte_4 : dw 4, 4, 4, 4, 4, 4, 4, 4,
 
 
 section .text
@@ -40,10 +40,14 @@ pixelar_asm:
 	mov rbx,rdi     ;copio la dir de rdi porque la voy a modificar
 	shr rdx,1       ;cols = cols/2
 
-	movdqu xmm7,[mascara_pixel1]
-	movdqu xmm8,[mascara_pixel2]
-	movdqu xmm9,[mascara_pixel3]
-	movdqu xmm10,[cte_4]
+	
+
+	movdqu xmm10,[mascara_pixel1]
+	movdqu xmm11,[mascara_pixel2]
+	movdqu xmm12,[mascara_pixel3]
+	movdqu xmm13,[cte_4]
+
+	pxor xmm15,xmm15
 
 	.cicloexterno:
 	xor r11,r11     ;contador de columnas que se resetea x cada ciclo externo
@@ -63,27 +67,32 @@ pixelar_asm:
 		.ciclointerno:
 		cmp r11,rdx    ; j < cols/2
 
-		movd xmm0,[r12]  ; xmm0 = 0 | 0 | P3 | P2 |
-		pslldq xmm0,8    ; xmm0 = P3 | P2 | 0 | 0 |
-		movd xmm0,[rbx]  ; xmm0 = P3 | P2 | P1 | P0 | 
+		movq xmm0,[r12]  ; xmm0 = 0  | 0   | P3  | P2 |
+		pslldq xmm0,8    ; xmm0 = P3 | P2  | 0   | 0  |
+		movq xmm1,[rbx]  ; xmm1 = 0  |  0  |  P1 | P0 |
+		por xmm0,xmm1    ; xmm0 = P3 | P2  | P1  | P0 |
+
+		movdqu xmm2,xmm1
+		punpcklbw xmm1,xmm15   ; xmm1 = 0 | A1 | 0 | R1 | 0 | G1 | 0 | B1 | 0 | A0 | 0 | R0 | 0 | G0 | 0 | B0
+		punpckhbw xmm2,xmm15   ; xmm2 = 0 | A3 | 0 | R3 | 0 | G3 | 0 | B3 | 0 | A2 | 0 | R2 | 0 | G2 | 0 | B2
+
+		paddb xmm1,xmm2  ; xmm1 = 0 | A1 + A3 | 0 | R1 + R3 | 0 | G1 + G3 | 0 | B1 + B3 | 0 | A0 + A2 | 0 | R0 + R2 | 0 | G0 + G2 | 0 | B0 + B2        
+		movdqu xmm3,xmm1  
+		psrldq xmm3,8    ; xmm3 = 0 |    0   | 0  |   0    | 0  |   0    |  0 |   0     | 0  | A1 + A3 | 0 | R1 + R3 | 0 | G1 + G3 | 0 | B1 + B3 
+
+		paddb xmm1,xmm3  ; xmm1 = 0 |    0   | 0  |   0    | 0  |   0    |  0 |   0     | 0  | A0 + A2 + A1 + A3 | 0 | R0 + R2 + R1 + R3 | 0 | G0 + G2 + G1 + G3 | 0 | B0 + B2 + B1 + B3 
 		
-									  ; xmm0 = ......................| A0 | R0 | G0 | B0
-		movdqu xmm1,xmm0              
-		pshufb xmm1,[mascara_pixel1]  ; xmm1 = FRUTA | FRUTA | FRUTA | A1 | R1 | G1 | B1
+		psrlw xmm1,xmm13 	; xmm1 = 0 |  0 | 0 | 0  | A0 + A2 + A1 + A3  / 4 | R0 + R2 + R1 + R3 / 4 | G0 + G2 + G1 + G3  / 4| B0 + B2 + B1 + B3 /4
+		packuswb xmm1,xmm15 ; xmm1 = 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | SA | SR | SG | SB |
 
-		movdqu xmm2,xmm0
-		pshufb xmm2,[mascara_pixel2]  ; xmm2 = FRUTA | FRUTA | FRUTA | A2 | R2 | G2 | B2
-
-		movdqu xmm3,xmm0
-		pshufb xmm3,[mascara_pixel3]  ; xmm3 = FRUTA | FRUTA | FRUTA | A3 | R3 | G3 | B3
-
-		paddb xmm0,xmm1               ; xmm0 = ...| A0 + A1 | R0 + R1 | G0 + G1 | B0 + B1
-		paddb xmm0,xmm2				  ; xmm0 = ...| A0 + A1 + A2 | R0 + R1 + R2 | G0 + G1 + G2 | B0 + B1 + B2
-		paddb xmm0,xmm3               ; xmm0 = ...| A0 + A1 + A2 + A3 | R0 + R1 + R2 + R3 | G0 + G1 + G2 + G3 | B0 + B1 + B2 + B3
-
-			
-
-
+		mov rsi,rbx      
+		movd [rsi],xmm1
+		add rsi,4
+		movd [rsi],xmm1
+		mov rsi,r12
+		movd [rsi],xmm1
+		add rsi,4 
+		movd [rsi],xmm1
 
 		add rbx,8
 		add r12,8
