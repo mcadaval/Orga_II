@@ -20,7 +20,7 @@ extern pixelar_c
 global pixelar_asm
 
 section .data
-cte_4 : dd 4.0, 4.0, 4.0, 4.0, 
+cte_4 : dd 4, 4, 4, 4, 
 
 
 section .text
@@ -35,7 +35,6 @@ pixelar_asm:
 	
 	
 	pxor xmm15,xmm15
-	movdqu xmm14,[cte_4]
 	xor r13,r13  ;contador de filas arranca en 0 
 	shr rdx,2  ;cols = cols/4
 
@@ -86,37 +85,15 @@ pixelar_asm:
 	punpcklwd xmm5,xmm15   ;xmm5 = 0 | 0 | 0 | A6 | 0 | 0 | 0 | R6 | 0 | 0 | 0 | G6 | 0 | 0 | 0 | B6
 	punpckhwd xmm7,xmm15   ;xmm7 = 0 | 0 | 0 | A7 | 0 | 0 | 0 | R7 | 0 | 0 | 0 | G7 | 0 | 0 | 0 | B7
 
-	cvtdq2ps xmm0,xmm0
-	cvtdq2ps xmm3,xmm3
-	cvtdq2ps xmm2,xmm2
-	cvtdq2ps xmm4,xmm4
-	cvtdq2ps xmm1,xmm1
-	cvtdq2ps xmm6,xmm6
-	cvtdq2ps xmm5,xmm5
-	cvtdq2ps xmm7,xmm7
-
-	divps xmm0,xmm14  
-	divps xmm3,xmm14 
-	divps xmm2,xmm14  
-	divps xmm4,xmm14 
-	divps xmm1,xmm14  
-	divps xmm6,xmm14 
-	divps xmm5,xmm14  
-	divps xmm7,xmm14 
+	psrld xmm0,2
+	psrld xmm3,2
+	psrld xmm2,2
+	psrld xmm4,2
+	psrld xmm1,2
+	psrld xmm6,2
+	psrld xmm5,2
+	psrld xmm7,2
 	
-	; xmm0 =  0 | 0 | 0 | A1 + A5 + A0 + A4  / 4 | 0 | 0 | 0 | R1 + R5 + R0 + R4 / 4 | 0 | 0 | 0 | G1 + G5 + G0 + G4  / 4| 0 | 0 | 0 | B1 + B5 + B0 + B4 /4   (promedio de valores para el primer cuadrado)
-	; xmm2 =  0 | 0 | 0 | A2 + A3 + A6 + A7  / 4 | 0 | 0 | 0 | R2 + R3 + R6 + R7 / 4 | 0 | 0 | 0 | G2 + G3 + G6 + G7  / 4| 0 | 0 | 0 | B2 + B3 + B6 + B7 /4   (promedio de valores para el segundo cuadrado)
-
-	cvtps2dq xmm0,xmm0
-	cvtps2dq xmm3,xmm3
-	cvtps2dq xmm2,xmm2
-	cvtps2dq xmm4,xmm4
-	cvtps2dq xmm1,xmm1
-	cvtps2dq xmm6,xmm6
-	cvtps2dq xmm5,xmm5
-	cvtps2dq xmm7,xmm7
-
-
 
 	paddd xmm0,xmm3        ;xmm0 = 0 | 0 | 0 | A0 + A1 | 0 | 0 | 0 | R0 + R1 | 0 | 0 | 0 | G0 + G1 | 0 | 0 | 0 | B0 + B1
 	paddd xmm1,xmm6        ;xmm1 = 0 | 0 | 0 | A4 + A5 | 0 | 0 | 0 | R4 + R5 | 0 | 0 | 0 | G4 + G5 | 0 | 0 | 0 | B4 + B5
@@ -125,6 +102,9 @@ pixelar_asm:
 	paddd xmm2,xmm4        ;xmm2 = 0 | 0 | 0 | A2 + A3 | 0 | 0 | 0 | R2 + R3 | 0 | 0 | 0 | G2 + G3 | 0 | 0 | 0 | B2 + B3
 	paddd xmm5,xmm7        ;xmm5 = 0 | 0 | 0 | A6 + A7 | 0 | 0 | 0 | R6 + R7 | 0 | 0 | 0 | G6 + G7 | 0 | 0 | 0 | B6 + B7
 	paddd xmm2,xmm5        ;xmm2 = 0 | 0 | 0 | A2 + A3 + A6 + A7 | 0 | 0 | 0 | R2 + R3 + R6 + R7 | 0 | 0 | 0 | G2 + G3 + G6 + G7 | 0 | 0 | 0 | B2 + B3 + B6 + B7
+
+	; xmm0 =  0 | 0 | 0 | A1 + A5 + A0 + A4  / 4 | 0 | 0 | 0 | R1 + R5 + R0 + R4 / 4 | 0 | 0 | 0 | G1 + G5 + G0 + G4  / 4| 0 | 0 | 0 | B1 + B5 + B0 + B4 /4   (promedio de valores para el primer cuadrado)
+	; xmm2 =  0 | 0 | 0 | A2 + A3 + A6 + A7  / 4 | 0 | 0 | 0 | R2 + R3 + R6 + R7 / 4 | 0 | 0 | 0 | G2 + G3 + G6 + G7  / 4| 0 | 0 | 0 | B2 + B3 + B6 + B7 /4   (promedio de valores para el segundo cuadrado)
 
 	
 	packusdw xmm0,xmm0  ; xmm0 = 0 | A1 + A5 + A0 + A4  / 4 | 0 | R1 + R5 + R0 + R4 / 4 | 0 | G1 + G5 + G0 + G4  / 4 | 0 | B1 + B5 + B0 + B4 /4 | 0 | A1 + A5 + A0 + A4  / 4 | 0 | R1 + R5 + R0 + R4 / 4 | 0 | G1 + G5 + G0 + G4  / 4 | 0 | B1 + B5 + B0 + B4 /4
