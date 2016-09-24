@@ -72,7 +72,7 @@ colorizar_asm:
   .iterar_columnas:
     cmp r11, rdx        ; verificamos si ya terminamos
     jge .incrementar_punteros 
-    inc r11             ; incrementamos r11
+    add r11, 2             ; incrementamos r11
     jmp .resolver_calculos
 
   .incrementar_punteros:
@@ -254,7 +254,7 @@ colorizar_asm:
     cvtdq2ps xmm9, xmm9       ; xmm9 = |A(0,0)|R(0,0)|G(0,0)|B(0,0)| (FLOATS)
 
     punpckhwd xmm10, xmm2     ; xmm10 = | 0 | 0 | 0 |A(0,2)| 0 | 0 | 0 |R(0,2)| 0 | 0 | 0 |G(0,2)| 0 | 0 | 0 |B(0,2)|
-    cvtdq2ps xmm9, xmm9       ; xmm10 = |A(0,2)|R(0,2)|G(0,2)|B(0,2)| (FLOATS)
+    cvtdq2ps xmm10, xmm10     ; xmm10 = |A(0,2)|R(0,2)|G(0,2)|B(0,2)| (FLOATS)
     
     ; hacemos el producto
     mulps xmm5, xmm9          ; xmm5 = |...|R(0,0)*phi_R0|G(0,0)*phi_G0|B(0,0)*phi_B0|
@@ -267,7 +267,7 @@ colorizar_asm:
     packusdw xmm5, xmm7       ; xmm5 = |...|R(0,2)*phi_R1|G(0,2)*phi_G1|B(0,2)*phi_B1|...|R(0,0)*phi_R0|G(0,0)*phi_G0|B(0,0)*phi_B0| (INT W)
     packuswb xmm5, xmm5       ; xmm5 = |..|..|..|..|..|..|..|..|...|R(0,2)*phi_R1|G(0,2)*phi_G1|B(0,2)*phi_B1|...|R(0,0)*phi_R0|G(0,0)*phi_G0|B(0,0)*phi_B0| (INT B)
 
-    pextrq rax, xmm5, 0     ; eax = |...|R(0,2)*phi_R1|G(0,2)*phi_G1|B(0,2)*phi_B1|...|R(0,0)*phi_R0|G(0,0)*phi_G0|B(0,0)*phi_B0|
+    pextrq rax, xmm5, 0     ; rax = |...|R(0,2)*phi_R1|G(0,2)*phi_G1|B(0,2)*phi_B1|...|R(0,0)*phi_R0|G(0,0)*phi_G0|B(0,0)*phi_B0|
     mov [rsi], rax
 
     ; movemos los punteros para la proxima iteracion
