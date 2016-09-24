@@ -91,12 +91,12 @@ combinar_asm:
 		punpckhwd xmm10,xmm15  ;xmm10 = 0 | 0 | 0 | An | 0 | 0 | 0 | Rn | 0 | 0 | 0 | Gn | 0 | 0 | 0 | Bn
 
 		psubd xmm1,xmm10         ; xmm1 = 0 | 0 | 0 | A0 -An-3 | 0 | 0 | 0 | R0 - Rn-3 | 0 | 0 | 0 | G0 - Gn-3 | 0 | 0 | 0 | B0 - Bn-3
-		psubd xmm5,xmm8	   ; xmm5 = 0 | 0 | 0 | A1 -An-2 | 0 | 0 | 0 | R1 - Rn-2 | 0 | 0 | 0 | G1 - Gn-2 | 0 | 0 | 0 | B1 - Bn-2
-		psubd xmm4,xmm9      ; xmm4 = 0 | 0 | 0 | A2 -An-1 | 0 | 0 | 0 | R2 - Rn-1 | 0 | 0 | 0 | G2 - Gn-1 | 0 | 0 | 0 | B2 - Bn-1
-		psubd xmm6,xmm7       ; xmm6 = 0 | 0 | 0 | A3 -An   | 0 | 0 | 0 | R3 - Rn   | 0 | 0 | 0 | G3 - Gn   | 0 | 0 | 0 | B3 - Bn 
+		psubd xmm5,xmm8	   		 ; xmm5 = 0 | 0 | 0 | A1 -An-2 | 0 | 0 | 0 | R1 - Rn-2 | 0 | 0 | 0 | G1 - Gn-2 | 0 | 0 | 0 | B1 - Bn-2
+		psubd xmm4,xmm9          ; xmm4 = 0 | 0 | 0 | A2 -An-1 | 0 | 0 | 0 | R2 - Rn-1 | 0 | 0 | 0 | G2 - Gn-1 | 0 | 0 | 0 | B2 - Bn-1
+		psubd xmm6,xmm7       	 ; xmm6 = 0 | 0 | 0 | A3 -An   | 0 | 0 | 0 | R3 - Rn   | 0 | 0 | 0 | G3 - Gn   | 0 | 0 | 0 | B3 - Bn 
 
 		cvtdq2ps xmm1,xmm1     ; (float) xmm1 = 0 | 0 | 0 | A0 -An-3 | 0 | 0 | 0 | R0 - Rn-3 | 0 | 0 | 0 | G0 - Gn-3 | 0 | 0 | 0 | B0 - Bn-3
-		cvtdq2ps xmm5,xmm5    ; (float) xmm5 = 0 | 0 | 0 | A1 -An-2 | 0 | 0 | 0 | R1 - Rn-2 | 0 | 0 | 0 | G1 - Gn-2 | 0 | 0 | 0 | B1 - Bn-2
+		cvtdq2ps xmm5,xmm5     ; (float) xmm5 = 0 | 0 | 0 | A1 -An-2 | 0 | 0 | 0 | R1 - Rn-2 | 0 | 0 | 0 | G1 - Gn-2 | 0 | 0 | 0 | B1 - Bn-2
 		cvtdq2ps xmm4,xmm4     ; (float) xmm4 = 0 | 0 | 0 | A2 -An-1 | 0 | 0 | 0 | R2 - Rn-1 | 0 | 0 | 0 | G2 - Gn-1 | 0 | 0 | 0 | B2 - Bn-1
 		cvtdq2ps xmm6,xmm6	   ; (float) xmm6 = 0 | 0 | 0 | A3 -An   | 0 | 0 | 0 | R3 - Rn   | 0 | 0 | 0 | G3 - Gn   | 0 | 0 | 0 | B3 - Bn 
 
