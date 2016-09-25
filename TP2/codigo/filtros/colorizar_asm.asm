@@ -22,17 +22,21 @@ global colorizar_asm
 
 section .rodata
 unos_flotantes: dd 1.0,1.0,1.0,1.0
-alpha_caso1: dd -1.0,-1.0,1,0,0,0      
+alpha_caso1: dd -1.0,-1.0,1.0,0.0      
 alpha_caso2: dd -1.0,1.0,-1.0,0.0    
 alpha_caso3a: dd -1.0,-1.0,1.0,0.0  
 alpha_caso3b: dd 1.0,-1.0,-1.0,0.0    
 alpha_caso4: dd 1.0,-1.0,-1.0,0.0
 full_255: dd 255,255,255,255
 
-mask_byte1: db 1,2,2,5,6,6,0,0,0,0,0,0,0,0,0,0
-mask_byte2: db 0,0,1,4,4,5,0,0,0,0,0,0,0,0,0,0
+; mask_byte1: db 1,2,2,5,6,6,0,0,0,0,0,0,0,0,0,0
+; mask_byte2: db 0,0,1,4,4,5,0,0,0,0,0,0,0,0,0,0
 
+mask_byte1: db 1,0,2,0,2,0,5,0,6,0,6,0,0,0,0,0
+mask_byte2: db 0,0,0,0,1,0,4,0,4,0,5,0,0,0,0,0
 
+mask_and: db 255,0,255,0,255,0,255,0,255,0,255,0,0,0,0,0
+mask_shuf: db 0,2,4,6,8,10,0,0,0,0,0,0,0,0,0,0
 section .text
 
 colorizar_asm:
@@ -56,7 +60,7 @@ colorizar_asm:
   add rdi, r8           
   add rdi, 4            ; rdi = puntero al pixel donde estoy posicionado en src
   
-  add rsi, r8           
+  add rsi, r9           
   add rsi, 4            ; rsi = puntero al pixel donde estoy posicionado en dst
 
   mov r10, 2            ; r10 = cantidad de iteraciones del ciclo de filas (inicializado en 2 porque no queremos recorrer los extremos)
@@ -87,8 +91,8 @@ colorizar_asm:
     ; ahora calculamos los maximos para cada color, de a 2 pixeles a la vez con sus respectivos vecinos
     ; en los comentarios usamos indices especificos para que no quede tan engorroso, pero los indices van variando en cada iteracion
     movdqu xmm1, [r12]  ; xmm1 = |A(0,3)|R(0,3)|G(0,3)|B(0,3)|A(0,2)|R(0,2)|G(0,2)|B(0,2)|A(0,1)|R(0,1)|G(0,1)|B(0,1)|A(0,0)|R(0,0)|G(0,0)|B(0,0)|
-    movdqu xmm8, xmm1   ; xmm8 = xmm1 (lo guardamos para usarlo al final de la iteracion)
     movdqu xmm2, [r13]  ; xmm2 = |A(1,3)|R(1,3)|G(1,3)|B(1,3)|A(1,2)|R(1,2)|G(1,2)|B(1,2)|A(1,1)|R(1,1)|G(1,1)|B(1,1)|A(1,0)|R(1,0)|G(1,0)|B(1,0)|
+    movdqu xmm8, xmm2   ; xmm8 = xmm2 (lo guardamos para usarlo al final de la iteracion)
     movdqu xmm3, [r14]  ; xmm3 = |A(2,3)|R(2,3)|G(2,3)|B(2,3)|A(2,2)|R(2,2)|G(2,2)|B(2,2)|A(2,1)|R(2,1)|G(2,1)|B(2,1)|A(2,0)|R(2,0)|G(2,0)|B(2,0)|
     
     pmaxub xmm1, xmm2   ; xmm1 = |max(A(0,3),A(1,3))|max(R(0,3),R(1,3))|max(G(0,3),G(1,3))|max(B(0,3),B(1,3))|...
@@ -110,15 +114,24 @@ colorizar_asm:
     pshufb xmm2, xmm3             ; xmm2 = ......|MAX_R1|MAX_R1|MAX_G1|MAX_R0|MAX_R0|MAX_G0|
     movdqu xmm3, [mask_byte2]     ; ponemos un mascara en xmm3 para hacer shuffle de bytes
     pshufb xmm4, xmm3             ; xmm4 = ......|MAX_G1|MAX_B1|MAX_B1|MAX_G0|MAX_B0|MAX_B0|
-    pcmpgtb xmm2, xmm4            ; solo nos importan las comparaciones de los bytes que seteamos
+    
+    ; extendemos a word con 0s porque sino la comparaciones pueden dar mal, ya que el cmp que tenemos es scon signo
+    movdqu xmm5, [mask_and]       
+    pand xmm4, xmm5               ; aca ponemos en 0 los bytes mas altos de cada word de xmm4
+    pand xmm2, xmm5               ; aca ponemos en 0 los bytes mas altos de cada word de xmm2
 
-    xor rax,rax
-    pmovmskb eax, xmm2      ; pasamos la mascara a 16 bits para poder utilizar los registros de proposito general y los saltos condicionales
+    ; pcmpgtb xmm4, xmm2            ; solo nos importan las comparaciones de los bytes que seteamos
+    pcmpgtw xmm4, xmm2            ; hacemos la comparacion
+    movdqu xmm3, [mask_shuf]      
+    pshufb xmm4, xmm3             ; como queremos trabajar con bytes reordenamos los resultados para que queden en los 6 bytes mas bajos
+
+    xor rax, rax
+    pmovmskb eax, xmm4      ; pasamos la mascara a 16 bits para poder utilizar los registros de proposito general y los saltos condicionales
+    xor ax, 0xFFF           ; negamos los resultados porque nos sirven las negaciones para determinar los saltos
     mov rbx, rax            ; la copiamos para poder hacer la logica con los resultados de los 2 pixels
     and ax, 101b            ; con un and anulamos los 3 bytes mas altos para ver las funciones phi del primer pixel. Tambien anulamos la segunda comparacion pues la usaremos depues solo si es necesario 
     movss xmm6, xmm0 
     shufps xmm6, xmm6, 0d           ; xmm6 = | alpha | alpha | alpha | alpha | 
-    CVTDQ2PS xmm6, xmm6
     movups xmm4, [unos_flotantes]   ; xmm4 = | 1.0 | 1.0 | 1.0 | 1.0 |
     cmp ax, 101b
     je .caso1_p1
@@ -131,7 +144,7 @@ colorizar_asm:
     ; phi_R = 1 - alpha
     ; phi_G = 1 - alpha
     ; phi_B = 1 + alpha 
-    movups xmm5, [alpha_caso4]      ; xmm5 = |0.0|-1.0|-1.0|1.0|0.0|
+    movups xmm5, [alpha_caso4]      ; xmm5 = |0.0|-1.0|-1.0|1.0|
     jmp .sumar_alpha_p1
 
   .caso1_p1:
@@ -147,17 +160,18 @@ colorizar_asm:
     ; phi_R = 1 - alpha
     ; phi_G = 1 + alpha
     ; phi_B = 1 - alpha
-    movups xmm5, [alpha_caso2]      ; xmm5 = |0.0|-1.0|1.0|-1.0|0.0|
+    movups xmm5, [alpha_caso2]      ; xmm5 = |0.0|-1.0|1.0|-1.0|
     jmp .sumar_alpha_p1
 
   .caso3_p1:
     ; MAX_R >= MAX_G y MAX_G < MAX_B
     ; phi_R = todavia no lo sabemos
-    ; phi_G = 1 + alpha
+    ; phi_G = 1 - alpha
     ; phi_B = todavia no lo sabemos
     ; en este caso tenemos que ver el resultado de MAX_R >= MAX_B (lo buscamos en rbx)
     xor rax, rax
-    and ax, bx
+    mov ax, bx
+    and ax, 10b
     cmp ax, 10b
     je .caso3a_p1
     ; caso 3b
@@ -165,7 +179,7 @@ colorizar_asm:
     ; phi_R = 1 - alpha
     ; phi_G = 1 - alpha
     ; phi_B = 1 + alpha
-    movups xmm5, [alpha_caso3b]      ; xmm5 = |0.0|-1.0|-1.0|1.0|0.0|
+    movups xmm5, [alpha_caso3b]      ; xmm5 = |0.0|-1.0|-1.0|1.0|
     jmp .sumar_alpha_p1
 
   .caso3a_p1:
@@ -173,7 +187,7 @@ colorizar_asm:
     ; phi_R = 1 + alpha
     ; phi_G = 1 - alpha
     ; phi_B = 1 - alpha
-    movups xmm5, [alpha_caso3a]       ; xmm5 = |0.0|1.0|-1.0|-1.0|0.0|
+    movups xmm5, [alpha_caso3a]       ; xmm5 = |0.0|1.0|-1.0|-1.0|
 
   .sumar_alpha_p1:
     mulps xmm5, xmm6        ; xmm5 = |+-alpha|+-alpha|+-alpha|+-alpha|
@@ -204,7 +218,7 @@ colorizar_asm:
     ; phi_R = 1 + alpha
     ; phi_G = 1 - alpha
     ; phi_B = 1 - alpha
-    movups xmm7, [alpha_caso1]       ; xmm5 = |0.0|1.0|-1.0|-1.0|0.0|
+    movups xmm7, [alpha_caso1]       ; xmm7 = |0.0|1.0|-1.0|-1.0|
     jmp .sumar_alpha_p2
 
   .caso2_p2:
@@ -212,25 +226,26 @@ colorizar_asm:
     ; phi_R = 1 - alpha
     ; phi_G = 1 + alpha
     ; phi_B = 1 - alpha
-    movups xmm7, [alpha_caso2]       ; xmm5 = |0.0|-1.0|1.0|-1.0|
+    movups xmm7, [alpha_caso2]       ; xmm7 = |0.0|-1.0|1.0|-1.0|
     jmp .sumar_alpha_p2
 
   .caso3_p2:
     ; MAX_R >= MAX_G y MAX_G < MAX_B
     ; phi_R = todavia no lo sabemos
-    ; phi_G = 1 + alpha
+    ; phi_G = 1 - alpha
     ; phi_B = todavia no lo sabemos
     ; en este caso tenemos que ver el resultado de MAX_R >= MAX_B (lo buscamos en rbx)
-    xor rax, rax
-    and ax, bx
-    cmp ax, 1000b
+    xor rbx, rbx
+    mov bx, ax
+    and bx, 10000b
+    cmp bx, 10000b
     je .caso3a_p2
     ; caso 3b
     ; MAX_R >= MAX_G y MAX_G < MAX_B y MAX_R < MAX_B
     ; phi_R = 1 - alpha
     ; phi_G = 1 - alpha
     ; phi_B = 1 + alpha
-    movups xmm7, [alpha_caso3b]       ; xmm5 = |0.0|-1.0|-1.0|1.0|0.0|
+    movups xmm7, [alpha_caso3b]       ; xmm7 = |0.0|-1.0|-1.0|1.0|
     jmp .sumar_alpha_p2
 
   .caso3a_p2:
@@ -238,7 +253,7 @@ colorizar_asm:
     ; phi_R = 1 + alpha
     ; phi_G = 1 - alpha
     ; phi_B = 1 - alpha
-    movups xmm7, [alpha_caso3a]       ; xmm5 = |0.0|1.0|-1.0|-1.0|
+    movups xmm7, [alpha_caso3a]       ; xmm7 = |0.0|1.0|-1.0|-1.0|
 
   .sumar_alpha_p2:
     mulps xmm7, xmm6          ; xmm7 = |+-alpha|+-alpha|+-alpha|+-alpha|
@@ -246,30 +261,30 @@ colorizar_asm:
 
     ; shuffleamos para tener los pixels que queremos
     pxor xmm2, xmm2           
-    pshufd xmm9, xmm8, 1000b  ; xmm9 = |..|..|..|..|..|..|..|..|A(0,2)|R(0,2)|G(0,2)|B(0,2)|A(0,0)|R(0,0)|G(0,0)|B(0,0)|
+    pshufd xmm9, xmm8, 1001b  ; xmm9 = |..|..|..|..|..|..|..|..|A(1,2)|R(1,2)|G(1,2)|B(1,2)|A(1,1)|R(1,1)|G(1,1)|B(1,1)|
     
     ; desempaquetamos y convertimos a float
-    punpcklbw xmm9, xmm2      ; xmm9 = | 0 |A(0,2)| 0 |R(0,2)| 0 |G(0,2)| 0 |B(0,2)| 0 |A(0,0)| 0 |R(0,0)| 0 |G(0,0)| 0 |B(0,0)|
+    punpcklbw xmm9, xmm2      ; xmm9 = | 0 |A(1,2)| 0 |(1,2)| 0 |G(1,2)| 0 |B(1,2)| 0 |A(1,1)| 0 |R(1,1)| 0 |G(1,1)| 0 |B(1,1)|
     movdqu xmm10, xmm9        ; xmm10 = xmm9
     
-    punpcklwd xmm9, xmm2      ; xmm9 = | 0 | 0 | 0 |A(0,0)| 0 | 0 | 0 |R(0,0)| 0 | 0 | 0 |G(0,0)| 0 | 0 | 0 |B(0,0)|
-    cvtdq2ps xmm9, xmm9       ; xmm9 = |A(0,0)|R(0,0)|G(0,0)|B(0,0)| (FLOATS)
+    punpcklwd xmm9, xmm2      ; xmm9 = | 0 | 0 | 0 |A(1,1)| 0 | 0 | 0 |R(1,1)| 0 | 0 | 0 |G(1,1)| 0 | 0 | 0 |B(1,1)|
+    cvtdq2ps xmm9, xmm9       ; xmm9 = |A(1,1)|R(1,1)|G(1,1)|B(1,1)| (FLOATS)
 
-    punpckhwd xmm10, xmm2     ; xmm10 = | 0 | 0 | 0 |A(0,2)| 0 | 0 | 0 |R(0,2)| 0 | 0 | 0 |G(0,2)| 0 | 0 | 0 |B(0,2)|
-    cvtdq2ps xmm10, xmm10     ; xmm10 = |A(0,2)|R(0,2)|G(0,2)|B(0,2)| (FLOATS)
+    punpckhwd xmm10, xmm2     ; xmm10 = | 0 | 0 | 0 |A(1,2)| 0 | 0 | 0 |R(1,2)| 0 | 0 | 0 |G(1,2)| 0 | 0 | 0 |B(1,2)|
+    cvtdq2ps xmm10, xmm10     ; xmm10 = |A(1,2)|R(1,2)|G(1,2)|B(1,2)| (FLOATS)
     
     ; hacemos el producto
-    mulps xmm5, xmm9          ; xmm5 = |...|R(0,0)*phi_R0|G(0,0)*phi_G0|B(0,0)*phi_B0|
-    mulps xmm7, xmm10         ; xmm7 = |...|R(0,2)*phi_R1|G(0,2)*phi_G1|B(0,2)*phi_B1|
+    mulps xmm5, xmm9          ; xmm5 = |...|R(1,1)*phi_R0|G(1,1)*phi_G0|B(1,1)*phi_B0|
+    mulps xmm7, xmm10         ; xmm7 = |...|R(1,2)*phi_R1|G(1,2)*phi_G1|B(1,2)*phi_B1|
 
     ; convertimos a int y empaquetamos
-    cvtps2dq xmm5, xmm5       ; xmm5 = |...|R(0,0)*phi_R0|G(0,0)*phi_G0|B(0,0)*phi_B0| (INT DW)         
-    cvtps2dq xmm7, xmm7       ; xmm7 = |...|R(0,2)*phi_R1|G(0,2)*phi_G1|B(0,2)*phi_B1| (INT DW)
+    cvtps2dq xmm5, xmm5       ; xmm5 = |...|R(1,1)*phi_R0|G(1,1)*phi_G0|B(1,1)*phi_B0| (INT DW)         
+    cvtps2dq xmm7, xmm7       ; xmm7 = |...|R(1,2)*phi_R1|G(1,2)*phi_G1|B(1,2)*phi_B1| (INT DW)
 
-    packusdw xmm5, xmm7       ; xmm5 = |...|R(0,2)*phi_R1|G(0,2)*phi_G1|B(0,2)*phi_B1|...|R(0,0)*phi_R0|G(0,0)*phi_G0|B(0,0)*phi_B0| (INT W)
-    packuswb xmm5, xmm5       ; xmm5 = |..|..|..|..|..|..|..|..|...|R(0,2)*phi_R1|G(0,2)*phi_G1|B(0,2)*phi_B1|...|R(0,0)*phi_R0|G(0,0)*phi_G0|B(0,0)*phi_B0| (INT B)
+    packusdw xmm5, xmm7       ; xmm5 = |...|R(1,2)*phi_R1|G(1,2)*phi_G1|B(1,2)*phi_B1|...|R(1,1)*phi_R0|G(1,1)*phi_G0|B(1,1)*phi_B0| (INT W)
+    packuswb xmm5, xmm5       ; xmm5 = |..|..|..|..|..|..|..|..|...|R(1,2)*phi_R1|G(1,2)*phi_G1|B(1,2)*phi_B1|...|R(1,1)*phi_R0|G(1,1)*phi_G0|B(1,1)*phi_B0| (INT B)
 
-    pextrq rax, xmm5, 0     ; rax = |...|R(0,2)*phi_R1|G(0,2)*phi_G1|B(0,2)*phi_B1|...|R(0,0)*phi_R0|G(0,0)*phi_G0|B(0,0)*phi_B0|
+    pextrq rax, xmm5, 0     ; rax = |...|R(1,2)*phi_R1|G(1,2)*phi_G1|B(1,2)*phi_B1|...|R(1,1)*phi_R0|G(1,1)*phi_G0|B(1,1)*phi_B0|
     mov [rsi], rax
 
     ; movemos los punteros para la proxima iteracion
