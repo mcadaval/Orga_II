@@ -12,8 +12,7 @@ IMAGENES=["lena.bmp"]
 
 assure_dirs()
 
-sizes=['200x200', '204x204', '208x208', '256x256', '512x512', '1024x768']
-
+sizes=['200x200', '204x204', '208x208', '256x256', '512x512', '1024x768', '1152x864', '1280x1024', '1440x1152', '1680x1152', '1920x1080']
 
 for filename in IMAGENES:
 	print(filename)
