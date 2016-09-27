@@ -37,6 +37,17 @@ echo $filtro
 echo $implementacion
 echo $parametro
 
+
+sizes=("200x200" "204x204" "208x208" "256x256" "512x512" "1024x768" "1152x864" "1280x1024" "1440x1152" "1680x1152" "1920x1080")
+
+i="1"
+for var in "${sizes[@]}"; do
+  # path="pwd"
+  file_name=$(ls ./data/imagenes_a_testear/ | grep $var)
+  mv data/imagenes_a_testear/$file_name data/imagenes_a_testear/$i.$file_name 
+  i=$((i+1))  
+done
+
 i=0
 if [ -z "$parametro" ]; then
   for filename in ./data/imagenes_a_testear/*.bmp; do
@@ -45,7 +56,7 @@ if [ -z "$parametro" ]; then
     else
       echo $filename ":" >> $filtro.$implementacion.out
     fi
-    ./../build/tp2 -v -i $implementacion $filtro $filename | grep totales | awk '{print $7}' >> $filtro.$implementacion.out
+    ./../build/tp2 -v -i $implementacion $filtro $filename | grep llamada | awk '{print $8}' >> $filtro.$implementacion.out
     i=$((i+1))
   done
 else
@@ -55,7 +66,7 @@ else
     else
       echo $filename ":" >> $filtro.$implementacion.out
     fi
-    ./../build/tp2 -v -i $implementacion $filtro $filename $parametro | grep totales | awk '{print $7}' >> $filtro.$implementacion.out
+    ./../build/tp2 -v -i $implementacion $filtro $filename $parametro | grep llamada | awk '{print $8}' >> $filtro.$implementacion.out
     i=$((i+1))
   done
 fi
