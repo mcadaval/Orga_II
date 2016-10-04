@@ -71,6 +71,7 @@ else
   done
 fi
 
-for filename in ./*.bmp; do
+path=$(pwd)
+for filename in $path/*.bmp; do
   rm $filename
 done

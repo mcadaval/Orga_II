@@ -40,7 +40,7 @@ void procesar_opciones(int argc, char **argv, configuracion_t *config)
 	config->verbose = false;
 	config->frames = false;
 	config->nombre = false;
-	config->cant_iteraciones = 10;
+	config->cant_iteraciones = 25;
 	config->archivo_entrada = NULL;
 	config->archivo_entrada_2 = NULL;
 	config->carpeta_salida = ".";
