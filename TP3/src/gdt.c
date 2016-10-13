@@ -17,6 +17,37 @@ ments.
 -If the granularity flag is set, the segment size can range from 4 KBytes to 4 GBytes, in 4-KByte
 increments.
 
+s = (descriptor type) flag
+Specifies whether the segment descriptor is for a system segment (S flag is clear) or a code or data
+segment (S flag is set).
+
+avl = Available and reserved bits
+Bit 20 of the second doubleword of the segment descriptor is available for use by system software.
+
+L = (64-bit code segment) flag
+In IA-32e mode, bit 21 of the second doubleword of the segment descriptor indicates whether a
+code segment contains native 64-bit code. A value of 1 indicates instructions in this code segment
+are executed in 64-bit mode. A value of 0 indicates the instructions in this code segment are
+executed in compatibility mode. If L-bit is set, then D-bit must be cleared. When not in IA-32e mode
+or for non-code segments, bit 21 is reserved and should always be set to 0.
+
+P = (segment-present) flag
+Indicates whether the segment is present in memory (set) or not present (clear). If this flag is clear,
+the processor generates a segment-not-present exception (#NP) when a segment selector that
+points to the segment descriptor is loaded into a segment register.
+
+type = Type field
+Indicates the segment or gate type and specifies the kinds of access that can be made to the
+segment and the direction of growth. The interpretation of this field depends on whether the
+descriptor type flag specifies an application (code or data) descriptor or a system descriptor.
+
+base = Base address fields
+Defines the location of byte 0 of the segment within the 4-GByte linear address space. The
+processor puts together the three base address fields to form a single 32-bit value. Segment base
+addresses should be aligned to 16-byte boundaries. Although 16-byte alignment is not required,
+this alignment allows programs to maximize performance by aligning code and data on 16-byte
+boundaries.
+
 */
 
 
@@ -41,14 +72,14 @@ gdt_entry gdt[GDT_COUNT] = {
         (unsigned char)     0x00,           /* base[31:24]  */
     },
     [GDT_IDX_KERNEL_CODE] = (gdt_entry) {
-        (unsigned short)    0x0000,         /* limit[0:15]  */
+        (unsigned short)    0xFFFF,         /* limit[0:15]  */
         (unsigned short)    0x0000,         /* base[0:15]   */
         (unsigned char)     0x00,           /* base[23:16]  */
-        (unsigned char)     0x00,           /* type         */
-        (unsigned char)     0x00,           /* s            */
+        (unsigned char)     0x0A,           /* type         */ 
+        (unsigned char)     0x01,           /* s            */
         (unsigned char)     0x00,           /* dpl          */
-        (unsigned char)     0x00,           /* p            */
-        (unsigned char)     0x00,           /* limit[16:19] */
+        (unsigned char)     0x01,           /* p            */
+        (unsigned char)     0x06,           /* limit[16:19] */
         (unsigned char)     0x00,           /* avl          */
         (unsigned char)     0x00,           /* l            */
         (unsigned char)     0x01,           /* db           */
@@ -56,14 +87,14 @@ gdt_entry gdt[GDT_COUNT] = {
         (unsigned char)     0x00,           /* base[31:24]  */
     },
     [GDT_IDX_USER_CODE] = (gdt_entry) {
-        (unsigned short)    0x0000,         /* limit[0:15]  */
+        (unsigned short)    0xFFFF,         /* limit[0:15]  */
         (unsigned short)    0x0000,         /* base[0:15]   */
         (unsigned char)     0x00,           /* base[23:16]  */
-        (unsigned char)     0x00,           /* type         */
+        (unsigned char)     0x0A,           /* type         */
         (unsigned char)     0x00,           /* s            */
         (unsigned char)     0x03,           /* dpl          */
-        (unsigned char)     0x00,           /* p            */
-        (unsigned char)     0x00,           /* limit[16:19] */
+        (unsigned char)     0x01,           /* p            */
+        (unsigned char)     0x06,           /* limit[16:19] */
         (unsigned char)     0x00,           /* avl          */
         (unsigned char)     0x00,           /* l            */
         (unsigned char)     0x01,           /* db           */
@@ -71,14 +102,14 @@ gdt_entry gdt[GDT_COUNT] = {
         (unsigned char)     0x00,           /* base[31:24]  */
     },
     [GDT_IDX_KERNEL_DATA] = (gdt_entry) {
-        (unsigned short)    0x0000,         /* limit[0:15]  */
+        (unsigned short)    0xFFFF,         /* limit[0:15]  */
         (unsigned short)    0x0000,         /* base[0:15]   */
         (unsigned char)     0x00,           /* base[23:16]  */
-        (unsigned char)     0x00,           /* type         */
-        (unsigned char)     0x00,           /* s            */
+        (unsigned char)     0x02,           /* type         */
+        (unsigned char)     0x01,           /* s            */
         (unsigned char)     0x00,           /* dpl          */
-        (unsigned char)     0x00,           /* p            */
-        (unsigned char)     0x00,           /* limit[16:19] */
+        (unsigned char)     0x01,           /* p            */
+        (unsigned char)     0x06,           /* limit[16:19] */
         (unsigned char)     0x00,           /* avl          */
         (unsigned char)     0x00,           /* l            */
         (unsigned char)     0x01,           /* db           */
@@ -86,18 +117,33 @@ gdt_entry gdt[GDT_COUNT] = {
         (unsigned char)     0x00,           /* base[31:24]  */
     },
     [GDT_IDX_USER_DATA] = (gdt_entry) {
-        (unsigned short)    0x0000,         /* limit[0:15]  */
+        (unsigned short)    0xFFFF,         /* limit[0:15]  */
         (unsigned short)    0x0000,         /* base[0:15]   */
         (unsigned char)     0x00,           /* base[23:16]  */
-        (unsigned char)     0x00,           /* type         */
+        (unsigned char)     0x02,           /* type         */
         (unsigned char)     0x00,           /* s            */
         (unsigned char)     0x03,           /* dpl          */
-        (unsigned char)     0x00,           /* p            */
-        (unsigned char)     0x00,           /* limit[16:19] */
+        (unsigned char)     0x01,           /* p            */
+        (unsigned char)     0x06,           /* limit[16:19] */
         (unsigned char)     0x00,           /* avl          */
         (unsigned char)     0x00,           /* l            */
         (unsigned char)     0x01,           /* db           */
         (unsigned char)     0x01,           /* g            */
+        (unsigned char)     0x00,           /* base[31:24]  */
+    },
+    [GDT_IDX_KERNEL_SCREEN] = (gdt_entry) {
+        (unsigned short)    0x0F9F,         /* limit[0:15]  */
+        (unsigned short)    0x8000,         /* base[0:15]   */
+        (unsigned char)     0x0B,           /* base[23:16]  */
+        (unsigned char)     0x02,           /* type         */
+        (unsigned char)     0x01,           /* s            */
+        (unsigned char)     0x00,           /* dpl          */
+        (unsigned char)     0x01,           /* p            */
+        (unsigned char)     0x00,           /* limit[16:19] */
+        (unsigned char)     0x00,           /* avl          */
+        (unsigned char)     0x00,           /* l            */
+        (unsigned char)     0x01,           /* db           */
+        (unsigned char)     0x00,           /* g            */
         (unsigned char)     0x00,           /* base[31:24]  */
     }
 };

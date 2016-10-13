@@ -30,7 +30,8 @@
 #define GDT_IDX_KERNEL_CODE         18
 #define GDT_IDX_USER_CODE           19    
 #define GDT_IDX_KERNEL_DATA         20    
-#define GDT_IDX_USER_CODE           21        
+#define GDT_IDX_USER_DATA           21 
+#define GDT_IDX_KERNEL_SCREEN       22       
 
 /* Direcciones de memoria */
 /* -------------------------------------------------------------------------- */

@@ -16,7 +16,7 @@ void deshabilitar_pic();
 
 static __inline __attribute__((always_inline)) void outb(int port, unsigned char data);
 
-__inline __attribute__((always_inline)) void fin_intr_pic1(void);
-__inline __attribute__((always_inline)) void fin_intr_pic2(void);
+static __inline __attribute__((always_inline)) void fin_intr_pic1(void);
+static __inline __attribute__((always_inline)) void fin_intr_pic2(void);
 
 #endif	/* !__PIC_H__ */

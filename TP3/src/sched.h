@@ -8,7 +8,6 @@
 #ifndef __SCHED_H__
 #define __SCHED_H__
 
-
 void sched_inicializar();
 unsigned short sched_proximo_indice();
 

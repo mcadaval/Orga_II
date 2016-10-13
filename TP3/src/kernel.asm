@@ -19,6 +19,7 @@ extern idt_inicializar
 extern resetear_pic
 extern habilitar_pic
 
+extern screen_pintar_pantalla
 
 ;; Saltear seccion de datos
 jmp start
@@ -49,18 +50,40 @@ start:
 
 
     ; habilitar A20
+    call habilitar_A20
 
     ; cargar la GDT
+    lgdt [GDT_DESC] 
 
     ; setear el bit PE del registro CR0
+    mov eax, cr0
+    or eax, 1     ; set PE (Protection Enable) bit in CR0 (Control Register 0)
+    mov cr0, eax
 
     ; pasar a modo protegido
+    ; index  ti  rpl
+    ; 10010  0    00
+    jmp 0x90:modoprotegido  
 
+BITS 32
+    modoprotegido:    
     ; acomodar los segmentos
+    xor eax, eax
+    mov ax, 10100000b
+    mov ds, ax          ; index = 20, gdt/ldt = 0, rpl = 00 
+    mov ss, ax
+    mov es, ax
+    mov gs, ax
+
+    mov ax, 10110000b
+    mov fs, ax          ; index = 22, gdt/ldt = 0, rpl = 00
 
     ; setear la pila
+    mov ebp, 0x27000
+    mov esp, 0x27000
 
     ; pintar pantalla, todos los colores, que bonito!
+    call screen_pintar_pantalla
 
     ; inicializar el manejador de memoria
 
@@ -79,7 +102,9 @@ start:
     ; inicializar el scheduler
 
     ; inicializar la IDT
-
+    lidt [IDT_DESC]
+    xor eax, eax
+    div eax
     ; configurar controlador de interrupciones
 
     ; cargar la tarea inicial

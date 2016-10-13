@@ -195,7 +195,6 @@ clean:
 	rm -f *.tsk
 	rm -f $(DISK_IMG)
 	rm -f genbin
-	rm -rf defines.h
 	rm -rf Makefile.taskwars
 	@echo ''
 
