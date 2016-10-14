@@ -102,9 +102,11 @@ BITS 32
     ; inicializar el scheduler
 
     ; inicializar la IDT
+    call idt_inicializar
     lidt [IDT_DESC]
     xor eax, eax
     div eax
+    ; int 0
     ; configurar controlador de interrupciones
 
     ; cargar la tarea inicial

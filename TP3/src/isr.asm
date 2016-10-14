@@ -12,6 +12,8 @@ BITS 32
 ;; PIC
 extern fin_intr_pic1
 
+;; SCREEN
+extern print_exception_message
 
 ;;
 ;; Definición de MACROS
@@ -27,6 +29,8 @@ _isr%1:
     mov ebx, 0xFFF2
     mov ecx, 0xFFF2
     mov edx, 0xFFF2
+    push %1
+    call print_exception_message
     jmp $
 %endmacro
 
@@ -61,6 +65,7 @@ ISR 16
 ISR 17
 ISR 18
 ISR 19
+ISR 20
 
 ;;
 ;; Rutina de atención del RELOJ
