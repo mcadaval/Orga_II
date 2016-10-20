@@ -66,5 +66,20 @@ void mmu_inicializar() {
         p2[i].avl = 0;
         p2[i].page_addr = i + 1024;         
     }
+
+    /* Para los restantes 0.5 MB = 1024 - PAGE_TABLE1_COUNT = 1024 - 896 = 128 (descriptores de Tablas de Paginas) de la 2da tabla dejamos present en 0 */
+    for (int i = PAGE_TABLE1_COUNT; i < 1024 - PAGE_TABLE1_COUNT; i++) {
+        p2[i].p = 0;
+        p2[i].rw = 1;
+        p2[i].us = 0;
+        p2[i].pwt = 0;
+        p2[i].pcd = 0;
+        p2[i].a = 0;
+        p2[i].d = 0;
+        p2[i].pat = 0;
+        p2[i].g = 0;
+        p2[i].avl = 0;
+        p2[i].page_addr = i + 1024;         
+    }
 }
 
