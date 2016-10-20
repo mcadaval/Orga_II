@@ -36,3 +36,11 @@ tp2
 
 # Pictures
 *.bmp
+
+# Files TP3
+*.tsko
+*.tsk
+*.img
+*.bin
+*.sym
+genbin

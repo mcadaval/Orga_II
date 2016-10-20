@@ -7,6 +7,8 @@
 
 global start
 
+;;DEFINES
+%define PAGE_DIRECTORY_ADDR 0x27000
 
 ;; GDT
 extern GDT_DESC
@@ -14,6 +16,9 @@ extern GDT_DESC
 ;; IDT
 extern IDT_DESC
 extern idt_inicializar
+
+;; PAGE DIRECTORY
+extern mmu_inicializar
 
 ;; PIC
 extern resetear_pic
@@ -86,12 +91,20 @@ BITS 32
     call screen_pintar_pantalla
 
     ; inicializar el manejador de memoria
+    call mmu_inicializar
 
     ; inicializar el directorio de paginas
+    mov eax, PAGE_DIRECTORY_ADDR
+    mov cr3, eax
+
 
     ; inicializar memoria de tareas
 
+    xchg bx, bx
     ; habilitar paginacion
+    mov eax, cr0
+    or eax, 0x80000000
+    mov cr0, eax
 
     ; inicializar tarea idle
 
@@ -104,9 +117,7 @@ BITS 32
     ; inicializar la IDT
     call idt_inicializar
     lidt [IDT_DESC]
-    xor eax, eax
-    div eax
-    ; int 0
+
     ; configurar controlador de interrupciones
 
     ; cargar la tarea inicial

@@ -31,4 +31,8 @@ void screen_pintar_pantalla();
 
 void print_exception_message(unsigned int e);
 
+void print_modo_estado();
+
+void print_modo_mapa();
+
 #endif  /* !__SCREEN_H__ */
