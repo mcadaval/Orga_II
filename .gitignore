@@ -43,4 +43,5 @@ tp2
 *.img
 *.bin
 *.sym
+*.ctsk
 genbin
