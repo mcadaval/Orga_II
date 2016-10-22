@@ -24,7 +24,10 @@ extern mmu_inicializar
 extern resetear_pic
 extern habilitar_pic
 
+;; SCREEN
 extern screen_pintar_pantalla
+extern print_modo_estado
+extern print_modo_mapa
 
 ;; Saltear seccion de datos
 jmp start
@@ -100,7 +103,6 @@ BITS 32
 
     ; inicializar memoria de tareas
 
-    xchg bx, bx
     ; habilitar paginacion
     mov eax, cr0
     or eax, 0x80000000

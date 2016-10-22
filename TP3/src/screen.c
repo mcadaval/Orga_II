@@ -10,7 +10,6 @@
  
 // imprime a partir de la posicion y,x de la pantalla la secuencia text con los colores indicados por attr
 void print(const char * text, unsigned int x, unsigned int y, unsigned short attr) {
-    breakpoint();
     ca (*p)[VIDEO_COLS] = (ca (*)[VIDEO_COLS]) VIDEO_SCREEN;
     int i;
     for (i = 0; text[i] != 0; i++) {
