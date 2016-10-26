@@ -85,7 +85,7 @@ proximo_reloj:
     pushad
 
     inc DWORD [reloj_numero]
-    mov ebx, [reloj]
+    mov ebx, [reloj_numero]
     cmp ebx, 0x4
     jl .ok
         mov DWORD [reloj_numero], 0x0

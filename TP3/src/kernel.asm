@@ -17,8 +17,9 @@ extern GDT_DESC
 extern IDT_DESC
 extern idt_inicializar
 
-;; PAGE DIRECTORY
-extern mmu_inicializar
+;; MMU
+extern mmu_inicializar_dir_kernel
+extern mmu_inicializar_dir_tarea
 
 ;; PIC
 extern resetear_pic
@@ -94,12 +95,13 @@ BITS 32
     call screen_pintar_pantalla
 
     ; inicializar el manejador de memoria
-    call mmu_inicializar
+    mov eax, PAGE_DIRECTORY_ADDR
+    push eax
+    call mmu_inicializar_dir_kernel
 
     ; inicializar el directorio de paginas
     mov eax, PAGE_DIRECTORY_ADDR
     mov cr3, eax
-
 
     ; inicializar memoria de tareas
 
@@ -123,6 +125,12 @@ BITS 32
     ; configurar controlador de interrupciones
 
     ; cargar la tarea inicial
+    mov eax, 0x110000
+    push eax
+    mov eax, 1
+    push eax
+    call mmu_inicializar_dir_tarea
+    mov cr3, eax
 
     ; saltar a la primer tarea
 

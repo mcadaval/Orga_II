@@ -8,6 +8,8 @@
 #ifndef __MMU_H__
 #define __MMU_H__
 
+#include "i386.h"
+
 #define PAGE_DIRECTORY_ADDR 0x27000
 #define PAGE_TABLE0_COUNT 1024
 #define PAGE_TABLE1_COUNT 896
@@ -51,7 +53,13 @@ typedef struct page_table_entry {
 
 /* PAGE DIRECTORY */
 extern pd_entry page_directory[];
-void mmu_inicializar();
-void mmu_inicializar_dir_tarea();
+void* dame_pagina_libre_tierra();
+void* dame_pagina_libre_mar();
+void copiar_pagina(unsigned int origen, unsigned int destino);
+void mmu_inicializar_dir_kernel();
+unsigned int mmu_inicializar_dir_tarea(unsigned int tarea, unsigned int fisica);
+void mmu_mapear_pagina(unsigned int virtual, unsigned int cr3, unsigned int fisica);
+void mmu_unmapear_pagina(unsigned int virtual, unsigned int cr3);
+
 
 #endif	/* !__MMU_H__ */
