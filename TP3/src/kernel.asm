@@ -123,7 +123,9 @@ BITS 32
     lidt [IDT_DESC]
 
     ; configurar controlador de interrupciones
-
+    call resetear_pic  ;remapeo del pic
+    call habilitar_pic ;prende el pics
+    sti
     ; cargar la tarea inicial
     mov eax, 0x110000
     push eax

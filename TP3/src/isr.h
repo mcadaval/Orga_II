@@ -30,4 +30,13 @@ void _isr18();
 void _isr19();
 void _isr20();
 
+//Rutina de atencion de reloj
+void _isr32();
+//Rutina de atencion de teclado
+void _isr33();
+//Rutina de atencion de SYSCALL 0x50
+void _isr80();
+//Rutina de atencion de SYSCALL 0x66
+void _isr102();
+
 #endif  /* !__ISR_H__ */

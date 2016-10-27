@@ -42,6 +42,8 @@ idt_descriptor IDT_DESC = {
 
 
 void idt_inicializar() {
+   
+    //Rutina de atencion de las excepciones
     IDT_ENTRY(0);
     IDT_ENTRY(1);
     IDT_ENTRY(2);
@@ -62,4 +64,12 @@ void idt_inicializar() {
     IDT_ENTRY(17);
     IDT_ENTRY(18);
     IDT_ENTRY(19);
+    //Rutina de atencion del reloj
+    IDT_ENTRY(32);
+    //Rutina de atencion del teclado
+    IDT_ENTRY(33);
+    //Rutina de atencion de SYSCALL 0x50 = 80
+    IDT_ENTRY(80);
+    //Rutina de atencion de SYSCALL 0x66 = 102
+    IDT_ENTRY(102);
 }

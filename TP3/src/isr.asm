@@ -70,7 +70,14 @@ ISR 20
 ;;
 ;; Rutina de atención del RELOJ
 ;; -------------------------------------------------------------------------- ;;
+global _isr32
 
+_isr32:
+call fin_intr_pic1   ;llama al pic para avisarle que atendio una interrupcion
+pushad               ;pushea todos los registros
+call proximo_reloj
+popad                ;popea todos los registros
+iret
 ;;
 ;; Rutina de atención del TECLADO
 ;; -------------------------------------------------------------------------- ;;
@@ -78,6 +85,17 @@ ISR 20
 ;;
 ;; Rutinas de atención de las SYSCALLS
 ;; -------------------------------------------------------------------------- ;;
+global _isr80
+
+_isr80:
+mov eax,0x42
+iret
+
+global _isr102
+
+_isr102:
+mov eax,0x42
+iret
 
 ;; Funciones Auxiliares
 ;; -------------------------------------------------------------------------- ;;
