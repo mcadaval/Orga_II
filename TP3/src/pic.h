@@ -19,4 +19,7 @@ static __inline __attribute__((always_inline)) void outb(int port, unsigned char
 static __inline __attribute__((always_inline)) void fin_intr_pic1(void);
 static __inline __attribute__((always_inline)) void fin_intr_pic2(void);
 
+void fin_intr_pic1_aux();
+void fin_intr_pic2_aux();
+
 #endif	/* !__PIC_H__ */

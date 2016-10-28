@@ -107,6 +107,38 @@ void print_modo_estado() {
         }
     }
 
+    // pintamos fondo del cuadro de la derecha
+    for (int i = 1; i < 15; i++) {
+        for (int j = 50; j < 78; j++) {
+            if (i == 1) {
+                print(" ", j, i, C_BG_CYAN | C_FG_BLACK);
+            } else {
+                print(" ", j, i, C_BG_BLACK | C_FG_WHITE);
+            }
+        }
+    }
+    
+    const char* message[13] = {
+        " EAX            CS",
+        " EBX            DS",
+        " ECX            ES",
+        " EDX            FS",
+        " ESI            GS",
+        " EDI            SS",
+        " EBP",
+        " ESP            EFLAGS",
+        " EIP",
+        " CR0",
+        " CR2",
+        " CR3",
+        " CR4"
+    };
+
+    // pintamos letras en el cuadro de la derecha
+    for (int i = 2; i < 15; i++) {
+        print(message[i-2], 51, i, C_BG_BLACK | C_FG_WHITE);
+    }
+
     // pintamos las siguientes 8 filas (16 a 23) 
     for (int i = 16; i < 24; i++) {
         for (int j = 0; j < VIDEO_COLS; j++) {
@@ -118,7 +150,7 @@ void print_modo_estado() {
                 print_int(i - 15, j, i, C_BG_LIGHT_GREY | C_FG_BLACK);
             // si es cualquier otra columna fondo azul
             } else {
-                print(" ", j, i, C_BG_BLUE | C_FG_BLACK);
+                print(" ", j, i, C_BG_CYAN | C_FG_BLACK);
             }
         }
     }
@@ -140,15 +172,15 @@ void print_modo_mapa() {
     // pintamos fondo verde para las primeras 16 posiciones de la cuarta fila (3). Para el resto fondo azul 
     for (int j = 0; j < VIDEO_COLS; j++) {
         if (j < 16)
-            print(" ", j, 0, C_BG_GREEN | C_FG_WHITE);
+            print(" ", j, 3, C_BG_GREEN | C_FG_WHITE);
         else
-            print(" ", j, 0, C_BG_BLUE | C_FG_WHITE);
+            print(" ", j, 3, C_BG_CYAN | C_FG_WHITE);
     }
 
     // pintamos fondo azul para las siguientes 20 filas (4 a 23)
     for (int i = 4; i < 24; i++) {
         for (int j = 0; j < VIDEO_COLS; j++) {
-            print(" ", j, 0, C_BG_BLUE | C_FG_WHITE);
+            print(" ", j, i, C_BG_CYAN | C_FG_WHITE);
         }
     }
 

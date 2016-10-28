@@ -8,9 +8,11 @@
 
 BITS 32
 
+;; ISR
+extern rutina_teclado
 
 ;; PIC
-extern fin_intr_pic1
+extern fin_intr_pic1_aux
 
 ;; SCREEN
 extern print_exception_message
@@ -73,14 +75,26 @@ ISR 20
 global _isr32
 
 _isr32:
-call fin_intr_pic1   ;llama al pic para avisarle que atendio una interrupcion
-pushad               ;pushea todos los registros
+call fin_intr_pic1_aux   ;llama al pic para avisarle que atendio una interrupcion
+pushad                   ;pushea todos los registros
 call proximo_reloj
-popad                ;popea todos los registros
+popad                    ;popea todos los registros
 iret
 ;;
 ;; Rutina de atención del TECLADO
 ;; -------------------------------------------------------------------------- ;;
+global _isr33
+
+_isr33:
+call fin_intr_pic1_aux     ;llama al pic para avisarle que atendio una interrupcion
+pushad                     ;pushea todos los registros
+xor eax, eax
+in al, 0x60                ;lee del puerto 60
+push eax
+call rutina_teclado
+popad                      ;popea todos los registros
+; xchg bx, bx
+iret
 
 ;;
 ;; Rutinas de atención de las SYSCALLS
