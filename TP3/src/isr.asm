@@ -92,6 +92,7 @@ xor eax, eax
 in al, 0x60                ;lee del puerto 60
 push eax
 call rutina_teclado
+add esp, 4
 popad                      ;popea todos los registros
 ; xchg bx, bx
 iret
