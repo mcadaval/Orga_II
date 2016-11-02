@@ -71,6 +71,261 @@ gdt_entry gdt[GDT_COUNT] = {
         (unsigned char)     0x00,           /* g            */
         (unsigned char)     0x00,           /* base[31:24]  */
     },
+    [GDT_IDX_IDLE] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tarea_idle & 0xFFFF,                                  /* base[0:15]   */
+        (unsigned char)     (&tarea_idle & 0xFF0000) >> 16,                        /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tarea_idle & 0xFF000000) >> 24,                      /* base[31:24]  */
+    },
+    [GDT_IDX_TASK1_CODE] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_navios[TSS_IDX_TASK1_CODE] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK1_CODE] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK1_CODE] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
+    [GDT_IDX_TASK1_FLAG] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_banderas[TSS_IDX_TASK1_FLAG] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK1_FLAG] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK1_FLAG] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
+    [GDT_IDX_TASK2_CODE] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_navios[TSS_IDX_TASK2_CODE] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK2_CODE] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK2_CODE] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
+    [GDT_IDX_TASK2_FLAG] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_banderas[TSS_IDX_TASK2_FLAG] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK2_FLAG] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK2_FLAG] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
+    [GDT_IDX_TASK3_CODE] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_navios[TSS_IDX_TASK3_CODE] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK3_CODE] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK3_CODE] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
+    [GDT_IDX_TASK3_FLAG] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_banderas[TSS_IDX_TASK3_FLAG] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK3_FLAG] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK3_FLAG] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
+    [GDT_IDX_TASK4_CODE] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_navios[TSS_IDX_TASK4_CODE] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK4_CODE] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK4_CODE] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
+    [GDT_IDX_TASK4_FLAG] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_banderas[TSS_IDX_TASK4_FLAG] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK4_FLAG] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK4_FLAG] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
+    [GDT_IDX_TASK5_CODE] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_navios[TSS_IDX_TASK5_CODE] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK5_CODE] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK5_CODE] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
+    [GDT_IDX_TASK5_FLAG] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_banderas[TSS_IDX_TASK5_FLAG] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK5_FLAG] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK5_FLAG] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
+    [GDT_IDX_TASK6_CODE] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_navios[TSS_IDX_TASK6_CODE] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK6_CODE] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK6_CODE] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
+    [GDT_IDX_TASK6_FLAG] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_banderas[TSS_IDX_TASK6_FLAG] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK6_FLAG] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK6_FLAG] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
+    [GDT_IDX_TASK7_CODE] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_navios[TSS_IDX_TASK7_CODE] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK7_CODE] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK7_CODE] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
+    [GDT_IDX_TASK7_FLAG] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_banderas[TSS_IDX_TASK7_FLAG] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK7_FLAG] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK7_FLAG] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
+    [GDT_IDX_TASK8_CODE] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_navios[TSS_IDX_TASK8_CODE] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK8_CODE] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_navios[TSS_IDX_TASK8_CODE] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
+    [GDT_IDX_TASK8_FLAG] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tss_banderas[TSS_IDX_TASK8_FLAG] & 0xFFFF,              /* base[0:15]   */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK8_FLAG] & 0xFF0000) >> 16,    /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tss_banderas[TSS_IDX_TASK8_FLAG] & 0xFF000000) >> 24,  /* base[31:24]  */
+    },
     [GDT_IDX_KERNEL_CODE] = (gdt_entry) {
         (unsigned short)    0xFFFF,         /* limit[0:15]  */
         (unsigned short)    0x0000,         /* base[0:15]   */
@@ -145,6 +400,21 @@ gdt_entry gdt[GDT_COUNT] = {
         (unsigned char)     0x01,           /* db           */
         (unsigned char)     0x00,           /* g            */
         (unsigned char)     0x00,           /* base[31:24]  */
+    },
+    [GDT_IDX_INIT_TASK] = (gdt_entry) {
+        (unsigned short)    0x0067,                                                /* limit[0:15]  */
+        (unsigned short)    &tarea_inicial & 0xFFFF,                               /* base[0:15]   */
+        (unsigned char)     (&tarea_inicial & 0xFF0000) >> 16,                     /* base[23:16]  */
+        (unsigned char)     0x09,                                                  /* type         */ 
+        (unsigned char)     0x00,                                                  /* s            */
+        (unsigned char)     0x00,                                                  /* dpl          */
+        (unsigned char)     0x01,                                                  /* p            */
+        (unsigned char)     0x00,                                                  /* limit[16:19] */
+        (unsigned char)     0x00,                                                  /* avl          */
+        (unsigned char)     0x00,                                                  /* l            */
+        (unsigned char)     0x00,                                                  /* db           */
+        (unsigned char)     0x00,                                                  /* g            */
+        (unsigned char)     (&tarea_inicial & 0xFF000000) >> 24,                   /* base[31:24]  */
     }
 };
 

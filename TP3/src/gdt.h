@@ -8,10 +8,8 @@
 #ifndef __GDT_H__
 #define __GDT_H__
 
-#define GDT_COUNT 41
-
 #include "defines.h"
-
+#include "tss.h"
 
 typedef struct str_gdt_descriptor {
     unsigned short  gdt_length;

@@ -24,14 +24,33 @@
 #define TASK_SIZE               2 * 4096
 
 
-/* Indices en la gdt */
+/* Indices GDT */
 /* -------------------------------------------------------------------------- */
-#define GDT_IDX_NULL_DESC           0
-#define GDT_IDX_KERNEL_CODE         18
-#define GDT_IDX_USER_CODE           19    
-#define GDT_IDX_KERNEL_DATA         20    
-#define GDT_IDX_USER_DATA           21 
-#define GDT_IDX_KERNEL_SCREEN       22       
+#define GDT_COUNT               41  
+#define GDT_IDX_NULL_DESC       0
+#define GDT_IDX_IDLE            1
+#define GDT_IDX_TASK1_CODE      2
+#define GDT_IDX_TASK1_FLAG      3
+#define GDT_IDX_TASK2_CODE      4
+#define GDT_IDX_TASK2_FLAG      5
+#define GDT_IDX_TASK3_CODE      6
+#define GDT_IDX_TASK3_FLAG      7
+#define GDT_IDX_TASK4_CODE      8
+#define GDT_IDX_TASK4_FLAG      9
+#define GDT_IDX_TASK5_CODE      10
+#define GDT_IDX_TASK5_FLAG      11
+#define GDT_IDX_TASK6_CODE      12
+#define GDT_IDX_TASK6_FLAG      13
+#define GDT_IDX_TASK7_CODE      14
+#define GDT_IDX_TASK7_FLAG      15
+#define GDT_IDX_TASK8_CODE      16
+#define GDT_IDX_TASK8_FLAG      17
+#define GDT_IDX_KERNEL_CODE     18
+#define GDT_IDX_USER_CODE       19    
+#define GDT_IDX_KERNEL_DATA     20    
+#define GDT_IDX_USER_DATA       21 
+#define GDT_IDX_KERNEL_SCREEN   22       
+#define GDT_IDX_INIT_TASK       23
 
 /* Direcciones de memoria */
 /* -------------------------------------------------------------------------- */
