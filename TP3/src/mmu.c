@@ -19,11 +19,11 @@ void* dame_pagina_libre() {
 // copia una pagina (4KB) a partir de la posicion origen en destino 
 // @todo
 void copiar_pagina(unsigned int origen, unsigned int destino) {
-    // char (*memoria_origen)[4096] = (char (*)[4096]) origen;
-    // char (*memoria_destino)[4096] = (char (*)[4096]) destino;
-    // for (int i = 0; i < 4096; i++) {
-    //     (*memoria_destino)[i] = (*memoria_origen)[i];
-    // }
+    char (*memoria_origen)[4096] = (char (*)[4096]) origen;
+    char (*memoria_destino)[4096] = (char (*)[4096]) destino;
+    for (int i = 0; i < 4096; i++) {
+        (*memoria_destino)[i] = (*memoria_origen)[i];
+    }
 }
 
 void mmu_inicializar_dir_kernel(unsigned int cr3) {

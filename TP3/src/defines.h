@@ -90,4 +90,23 @@
 
 #define TASK_IDLE_CODE_SRC_ADDR 0x00020000
 
+/* Indices TSS */
+/* -------------------------------------------------------------------------- */
+#define TSS_IDX_TASK1_CODE      0 
+#define TSS_IDX_TASK1_FLAG      0
+#define TSS_IDX_TASK2_CODE      1 
+#define TSS_IDX_TASK2_FLAG      1
+#define TSS_IDX_TASK3_CODE      2 
+#define TSS_IDX_TASK3_FLAG      2
+#define TSS_IDX_TASK4_CODE      3 
+#define TSS_IDX_TASK4_FLAG      3
+#define TSS_IDX_TASK5_CODE      4 
+#define TSS_IDX_TASK5_FLAG      4
+#define TSS_IDX_TASK6_CODE      5 
+#define TSS_IDX_TASK6_FLAG      5
+#define TSS_IDX_TASK7_CODE      6 
+#define TSS_IDX_TASK7_FLAG      6
+#define TSS_IDX_TASK8_CODE      7 
+#define TSS_IDX_TASK8_FLAG      7
+
 #endif  /* !__DEFINES_H__ */
