@@ -69,7 +69,7 @@ void tss_inicializar() {
         (unsigned int)    0x0000,                   /* esp2 */
         (unsigned short)  0x00,                     /* ss2 */
         (unsigned short)  0x00,                     /* unused3 */
-        (unsigned int)    mmu_inicializar_dir_tarea(), /* cr3 */
+        (unsigned int)    mmu_inicializar_dir_tarea(9, dame_pagina_libre()), /* cr3 */
         (unsigned int)    0x40000000,                   /* eip */
         (unsigned int)    0x202,                   /* eflags */
         (unsigned int)    0x0000,                   /* eax */
@@ -98,11 +98,12 @@ void tss_inicializar() {
         (unsigned short)  0x00                      /* iomap */
     };
 
-    for (int i = 0; i < CANT_TAREAS; i++) {
-        tss_navios[i] = (tss) {
+    for (int i = 1; i <= CANT_TAREAS; i++) {
+        unsigned int cr3_tarea_i = mmu_inicializar_dir_tarea(i, dame_pagina_libre());
+        tss_navios[i-1] = (tss) {
             (unsigned short)  0x00,                   /*   ptl   */
             (unsigned short)  0x00,                   /* unused0 */
-            (unsigned int)    0x2A000,                  /* esp0 */
+            (unsigned int)    dame_pagina_libre() + 0x1000,                  /* esp0 */
             (unsigned short)  0x00,                     /* ss0 */
             (unsigned short)  0x00,                     /* unused1 */
             (unsigned int)    0x0000,                   /* esp1 */
@@ -111,7 +112,7 @@ void tss_inicializar() {
             (unsigned int)    0x0000,                   /* esp2 */
             (unsigned short)  0x00,                     /* ss2 */
             (unsigned short)  0x00,                     /* unused3 */
-            (unsigned int)    mmu_inicializar_dir_tarea(), /* cr3 */
+            (unsigned int)    cr3_tarea_i,              /* cr3 */
             (unsigned int)    0x40000000,                   /* eip */
             (unsigned int)    0x202,                   /* eflags */
             (unsigned int)    0x0000,                   /* eax */
@@ -126,18 +127,60 @@ void tss_inicializar() {
             (unsigned short)  0x00,                     /* unused4 */
             (unsigned short)  0x9B,                     /* cs */ // selector de codigo nivel 3 10011  0  11  9B
             (unsigned short)  0x00,                     /* unused5 */
-            (unsigned short)  0x00,                     /* ss */
+            (unsigned short)  0xAB,                     /* ss */
             (unsigned short)  0x00,                     /* unused6 */
-            (unsigned short)  0x00,                     /* ds */
+            (unsigned short)  0xAB,                     /* ds */
             (unsigned short)  0x00,                     /* unused7 */
-            (unsigned short)  0x00,                     /* fs */
+            (unsigned short)  0xAB,                     /* fs */
             (unsigned short)  0x00,                     /* unused8 */
-            (unsigned short)  0x00,                     /* gs */
+            (unsigned short)  0xAB,                     /* gs */
             (unsigned short)  0x00,                     /* unused9 */
             (unsigned short)  0x00,                     /* ldt */
             (unsigned short)  0x00,                     /* unused10 */
             (unsigned short)  0x00,                     /* dtrap */
             (unsigned short)  0x00                      /* iomap */
+        };
+
+        tss_banderas[i-1] = (tss) {
+            (unsigned short)  0x00,                   /*   ptl   */
+            (unsigned short)  0x00,                   /* unused0 */
+            (unsigned int)    dame_pagina_libre() + 0x1000,                  /* esp0 */ // @todo
+            (unsigned short)  0x00,                     /* ss0 */
+            (unsigned short)  0x00,                     /* unused1 */
+            (unsigned int)    0x0000,                   /* esp1 */
+            (unsigned short)  0x00,                     /* ss1 */
+            (unsigned short)  0x00,                     /* unused2 */
+            (unsigned int)    0x0000,                   /* esp2 */
+            (unsigned short)  0x00,                     /* ss2 */
+            (unsigned short)  0x00,                     /* unused3 */
+            (unsigned int)    cr3_tarea_i,              /* cr3 */
+            (unsigned int)    0x40000000,                   /* eip */
+            (unsigned int)    0x202,                   /* eflags */
+            (unsigned int)    0x0000,                   /* eax */
+            (unsigned int)    0x0000,                   /* ecx */
+            (unsigned int)    0x0000,                   /* edx */
+            (unsigned int)    0x0000,                   /* ebx */
+            (unsigned int)    0x40001FFC,                   /* esp */
+            (unsigned int)    0x40001FFC,                   /* ebp */
+            (unsigned int)    0x0000,                   /* esi */
+            (unsigned int)    0x0000,                   /* edi */
+            (unsigned short)  0xAB,                     /* es */ // selector de datos nivel 3 10101  0  11  AB
+            (unsigned short)  0x00,                     /* unused4 */
+            (unsigned short)  0x9B,                     /* cs */ // selector de codigo nivel 3 10011  0  11  9B
+            (unsigned short)  0x00,                     /* unused5 */
+            (unsigned short)  0xAB,                     /* ss */
+            (unsigned short)  0x00,                     /* unused6 */
+            (unsigned short)  0xAB,                     /* ds */
+            (unsigned short)  0x00,                     /* unused7 */
+            (unsigned short)  0xAB,                     /* fs */
+            (unsigned short)  0x00,                     /* unused8 */
+            (unsigned short)  0xAB,                     /* gs */
+            (unsigned short)  0x00,                     /* unused9 */
+            (unsigned short)  0x00,                     /* ldt */
+            (unsigned short)  0x00,                     /* unused10 */
+            (unsigned short)  0x00,                     /* dtrap */
+            (unsigned short)  0x00                      /* iomap */
+        };
     }
 }
 

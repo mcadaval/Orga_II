@@ -132,7 +132,7 @@ unsigned int mmu_inicializar_dir_tarea(unsigned int tarea, unsigned int fisica) 
     // mapeamos pagina ancla (nivel 3)
     mmu_mapear_pagina(0x40002000, directorio_paginas, 0x0);
     
-    unsigned int direccion_codigo_tarea = (tarea - 1) * 8192 + 0x10000;
+    unsigned int direccion_codigo_tarea = (tarea - 1) * 0x2000 + 0x10000;
     // copia primer pagina de la tarea a la memoria indicada
     copiar_pagina(direccion_codigo_tarea, fisica);
     // copia segunda pagina de la tarea a la memoria indicada

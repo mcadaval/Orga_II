@@ -54,6 +54,8 @@ typedef struct str_tss {
 extern tss tarea_inicial;
 extern tss tarea_idle;
 extern tss tarea_dibujar;
+extern tss tss_navios[CANT_TAREAS];
+extern tss tss_banderas[CANT_TAREAS];
 
 void tss_inicializar();
 

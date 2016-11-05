@@ -109,4 +109,11 @@
 #define TSS_IDX_TASK8_CODE      7 
 #define TSS_IDX_TASK8_FLAG      7
 
+// define el campo base[0:15] de una entrada de la gdt suponiendo que le damos un parametro de tipo &tarea_inicial, &tarea_idle, &tss_navios[indx] o &tss_banderas[indx]
+#define GDT_TSS_BASE1(tssvar) ((int) &tssvar) & 0xFFFF
+
+#define GDT_TSS_BASE2(tssvar) (((int) &tssvar) & 0xFF0000) >> 16
+
+#define GDT_TSS_BASE3(tssvar) (((int) &tssvar) & 0xFF000000) >> 24
+
 #endif  /* !__DEFINES_H__ */
