@@ -53,7 +53,8 @@ typedef struct page_table_entry {
 
 /* PAGE DIRECTORY */
 extern pd_entry page_directory[];
-void* dame_pagina_libre();
+void* dame_pagina_libre_tierra();
+void* dame_pagina_libre_mar();
 void copiar_pagina(unsigned int origen, unsigned int destino);
 void mmu_inicializar_dir_kernel();
 unsigned int mmu_inicializar_dir_tarea(unsigned int tarea, unsigned int fisica);

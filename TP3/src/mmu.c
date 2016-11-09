@@ -7,12 +7,20 @@
 
 #include "mmu.h"
 
-static void* siguinte_pagina_libre = (void*) 0x30000;
+static void* siguinte_pagina_libre_tierra = (void*) 0x30000;
+static void* siguinte_pagina_libre_mar = (void*) 0x100000;
 
 // devuelve la posición de memoria de la siguiente pagina de 4KB libre en memoria "tierra"
-void* dame_pagina_libre() {
-    void* temp = siguinte_pagina_libre;
-    siguinte_pagina_libre += 4096;
+void* dame_pagina_libre_tierra() {
+    void* temp = siguinte_pagina_libre_tierra;
+    siguinte_pagina_libre_tierra += 4096;
+    return temp;
+}
+
+// devuelve la posición de memoria de la siguiente pagina de 4KB libre en memoria "mar"
+void* dame_pagina_libre_mar() {
+    void* temp = siguinte_pagina_libre_mar;
+    siguinte_pagina_libre_mar += 4096;
     return temp;
 }
 
@@ -58,7 +66,7 @@ void mmu_inicializar_dir_kernel(unsigned int cr3) {
     directorio_paginas[0].avl = 0;
     directorio_paginas[0].table_addr = PAGE_TABLE0_ADDR >> 12;
 
-    void* PAGE_TABLE1_ADDR = dame_pagina_libre();
+    void* PAGE_TABLE1_ADDR = dame_pagina_libre_tierra();
 
     // seteamos entrada 1 en el directorio de paginas
     directorio_paginas[1].p = 1;
@@ -121,9 +129,9 @@ void mmu_inicializar_dir_kernel(unsigned int cr3) {
 
 unsigned int mmu_inicializar_dir_tarea(unsigned int tarea, unsigned int fisica) {
     // pedimos una pagina para el directorio de paginas de la tarea
-    unsigned int directorio_paginas = (unsigned int) dame_pagina_libre();
+    unsigned int directorio_paginas = (unsigned int) dame_pagina_libre_tierra();
 
-    mmu_inicializar_dir_kernel(directorio_paginas);
+    // mmu_inicializar_dir_kernel(directorio_paginas);
 
     // mapeamos pagina 1 (nivel 3)
     mmu_mapear_pagina(0x40000000, directorio_paginas, fisica);
@@ -158,7 +166,7 @@ void mmu_mapear_pagina(unsigned int virtual, unsigned int cr3, unsigned int fisi
         directorio_paginas[pd_index].ps = 0;
         directorio_paginas[pd_index].g = 0;
         directorio_paginas[pd_index].avl = 0;
-        directorio_paginas[pd_index].table_addr = ((unsigned int) dame_pagina_libre()) >> 12;
+        directorio_paginas[pd_index].table_addr = ((unsigned int) dame_pagina_libre_tierra()) >> 12;
 
         // obtenemos la direccion de la tabla de paginas en la cual debemos mapear la pagina
         pt_entry* tabla_paginas = (pt_entry*) (directorio_paginas[pd_index].table_addr << 12);

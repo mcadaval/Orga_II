@@ -5,8 +5,7 @@
  funciones auxiliares para rutinas de atencion de interrupciones
 */
 
-#include "screen.h"
-#include "israux.h"
+ #include "israux.h"
 
 void rutina_teclado(unsigned char scan_code) {
     if (scan_code == 0x32)

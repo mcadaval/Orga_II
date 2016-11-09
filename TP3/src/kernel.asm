@@ -30,6 +30,12 @@ extern screen_pintar_pantalla
 extern print_modo_estado
 extern print_modo_mapa
 
+;; TSS
+extern tss_inicializar
+
+;; SCHED
+extern sched_inicializar
+
 ;; Saltear seccion de datos
 jmp start
 
@@ -105,18 +111,20 @@ BITS 32
 
     ; inicializar memoria de tareas
 
+
     ; habilitar paginacion
     mov eax, cr0
     or eax, 0x80000000
     mov cr0, eax
 
     ; inicializar tarea idle
-
     ; inicializar todas las tsss
-
     ; inicializar entradas de la gdt de las tsss
+    call tss_inicializar
+    xchg bx, bx
 
     ; inicializar el scheduler
+    call sched_inicializar
 
     ; inicializar la IDT
     call idt_inicializar
@@ -127,15 +135,14 @@ BITS 32
     call habilitar_pic ;prende el pics
     sti
 
+
     ; cargar la tarea inicial
-    mov eax, 0x110000
-    push eax
-    mov eax, 1
-    push eax
-    call mmu_inicializar_dir_tarea
-    mov cr3, eax
+    mov ax, 23
+    shl ax, 3
+    ltr ax
 
     ; saltar a la primer tarea
+    jmp 0x88:0
 
     ; Ciclar infinitamente (por si algo sale mal...)
     mov eax, 0xFFFF

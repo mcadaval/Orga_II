@@ -70,6 +70,11 @@ void idt_inicializar() {
     IDT_ENTRY(33);
     //Rutina de atencion de SYSCALL 0x50 = 80
     IDT_ENTRY(80);
+    // cambiamos DPL para que puedan ser llamadas con privilegios de usuario (nivel 3)
+    idt[80].attr = (unsigned short) 0xEE00;
     //Rutina de atencion de SYSCALL 0x66 = 102
     IDT_ENTRY(102);
+    // cambiamos DPL para que puedan ser llamadas con privilegios de usuario (nivel 3)
+    idt[102].attr = (unsigned short) 0xEE00;
+
 }

@@ -9,6 +9,8 @@
 #define __TSS_H__
 
 #include "defines.h"
+#include "gdt.h"
+#include "mmu.h"
 
 typedef struct str_tss {
     unsigned short  ptl;

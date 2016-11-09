@@ -36,5 +36,16 @@ typedef struct str_gdt_entry {
 extern gdt_entry gdt[];
 extern gdt_descriptor GDT_DESC;
 
+// int GDT_TSS_BASE1(tss* tssvar) {
+//     return ((int) tssvar) & 0xFFFF;
+// }
+
+// int GDT_TSS_BASE2(tss* tssvar) {
+//     return (((int) tssvar) & 0xFF0000) >> 16;
+// }
+
+// int GDT_TSS_BASE3(tss* tssvar) {
+//     return (((int) tssvar) & 0xFF000000) >> 24;
+// }
 
 #endif  /* !__GDT_H__ */

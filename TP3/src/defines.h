@@ -28,23 +28,7 @@
 /* -------------------------------------------------------------------------- */
 #define GDT_COUNT               41  
 #define GDT_IDX_NULL_DESC       0
-#define GDT_IDX_IDLE            1
-#define GDT_IDX_TASK1_CODE      2
-#define GDT_IDX_TASK1_FLAG      3
-#define GDT_IDX_TASK2_CODE      4
-#define GDT_IDX_TASK2_FLAG      5
-#define GDT_IDX_TASK3_CODE      6
-#define GDT_IDX_TASK3_FLAG      7
-#define GDT_IDX_TASK4_CODE      8
-#define GDT_IDX_TASK4_FLAG      9
-#define GDT_IDX_TASK5_CODE      10
-#define GDT_IDX_TASK5_FLAG      11
-#define GDT_IDX_TASK6_CODE      12
-#define GDT_IDX_TASK6_FLAG      13
-#define GDT_IDX_TASK7_CODE      14
-#define GDT_IDX_TASK7_FLAG      15
-#define GDT_IDX_TASK8_CODE      16
-#define GDT_IDX_TASK8_FLAG      17
+#define GDT_IDX_IDLE            17
 #define GDT_IDX_KERNEL_CODE     18
 #define GDT_IDX_USER_CODE       19    
 #define GDT_IDX_KERNEL_DATA     20    
@@ -110,10 +94,10 @@
 #define TSS_IDX_TASK8_FLAG      7
 
 // define el campo base[0:15] de una entrada de la gdt suponiendo que le damos un parametro de tipo &tarea_inicial, &tarea_idle, &tss_navios[indx] o &tss_banderas[indx]
-#define GDT_TSS_BASE1(tssvar) ((int) &tssvar) & 0xFFFF
+// #define GDT_TSS_BASE1(tssvar) tssvar & 0xFFFF
 
-#define GDT_TSS_BASE2(tssvar) (((int) &tssvar) & 0xFF0000) >> 16
+// #define GDT_TSS_BASE2(tssvar) (tssvar & 0xFF0000) >> 16
 
-#define GDT_TSS_BASE3(tssvar) (((int) &tssvar) & 0xFF000000) >> 24
+// #define GDT_TSS_BASE3(tssvar) (tssvar & 0xFF000000) >> 24
 
 #endif  /* !__DEFINES_H__ */

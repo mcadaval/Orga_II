@@ -12,10 +12,17 @@ BITS 32
 extern rutina_teclado
 
 ;; PIC
-extern fin_intr_pic1_aux
+extern fin_intr_pic1
 
 ;; SCREEN
 extern print_exception_message
+
+;; GAME
+extern game_service
+
+;; SCHED
+extern sched_proximo_indice
+extern matar_tarea
 
 ;;
 ;; Definición de MACROS
@@ -32,7 +39,9 @@ _isr%1:
     mov ecx, 0xFFF2
     mov edx, 0xFFF2
     push %1
-    call print_exception_message
+    call print_exception_message ;imprime mensaje de excepcion
+    call matar_tarea             ;mata la tarea
+    jmp 0x90:0x40000000          ;cambia a tarea idle
     jmp $
 %endmacro
 
@@ -43,6 +52,8 @@ _isr%1:
 reloj_numero:           dd 0x00000000
 reloj:                  db '|/-\'
 
+offset: dd 0x0
+selector: dw 0x0
 
 ;;
 ;; Rutina de atención de las EXCEPCIONES
@@ -75,19 +86,32 @@ ISR 20
 global _isr32
 
 _isr32:
-call fin_intr_pic1_aux   ;llama al pic para avisarle que atendio una interrupcion
-pushad                   ;pushea todos los registros
-call proximo_reloj
-popad                    ;popea todos los registros
-iret
+pushad                       ;pushea todos los registros
+call proximo_reloj           ;llama al proximo reloj
+call sched_proximo_indice    ;obtiene el proximo indice
+
+cmp ax, 0
+je .nojump
+    shl ax, 3
+    mov [selector], ax
+    call fin_intr_pic1       ;llama al pic para avisarle que atendio una interrupcion
+    jmp far [offset]
+    jmp .end
+
+.nojump:
+    call fin_intr_pic1
+
+.end:
+    popad                        ;popea todos los registros
+    iret
 ;;
 ;; Rutina de atención del TECLADO
 ;; -------------------------------------------------------------------------- ;;
 global _isr33
 
 _isr33:
-call fin_intr_pic1_aux     ;llama al pic para avisarle que atendio una interrupcion
 pushad                     ;pushea todos los registros
+call fin_intr_pic1         ;llama al pic para avisarle que atendio una interrupcion
 xor eax, eax
 in al, 0x60                ;lee del puerto 60
 push eax
@@ -103,13 +127,25 @@ iret
 global _isr80
 
 _isr80:
-mov eax,0x42
+pushad
+mov edi, cr3
+push edi                   ;pushea parametros a la pila
+push ecx                   
+push ebx
+push eax
+call game_service          ;llama a game_service
+jmp 0x90:0x40000000        ;cambia a tarea idle 
+add esp, 16 
+popad                      ;popea todos los registros
 iret
 
 global _isr102
 
 _isr102:
 mov eax,0x42
+
+jmp 0x90:0x40000000           ;cambia a tarea idle
+
 iret
 
 ;; Funciones Auxiliares
