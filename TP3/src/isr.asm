@@ -41,7 +41,7 @@ _isr%1:
     push %1
     call print_exception_message ;imprime mensaje de excepcion
     call matar_tarea             ;mata la tarea
-    jmp 0x90:0x40000000          ;cambia a tarea idle
+    jmp 0x88:0                   ;cambia a tarea idle
     jmp $
 %endmacro
 
@@ -86,6 +86,7 @@ ISR 20
 global _isr32
 
 _isr32:
+xchg bx, bx
 pushad                       ;pushea todos los registros
 call proximo_reloj           ;llama al proximo reloj
 call sched_proximo_indice    ;obtiene el proximo indice
@@ -134,7 +135,7 @@ push ecx
 push ebx
 push eax
 call game_service          ;llama a game_service
-jmp 0x90:0x40000000        ;cambia a tarea idle 
+jmp 0x88:0        ;cambia a tarea idle 
 add esp, 16 
 popad                      ;popea todos los registros
 iret
@@ -142,9 +143,9 @@ iret
 global _isr102
 
 _isr102:
-mov eax,0x42
+mov eax, 0x42
 
-jmp 0x90:0x40000000           ;cambia a tarea idle
+jmp 0x88:0           ;cambia a tarea idle
 
 iret
 

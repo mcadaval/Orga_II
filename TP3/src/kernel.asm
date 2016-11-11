@@ -19,6 +19,7 @@ extern idt_inicializar
 
 ;; MMU
 extern mmu_inicializar_dir_kernel
+extern mmu_inicializar_dir_idle
 extern mmu_inicializar_dir_tarea
 
 ;; PIC
@@ -104,6 +105,7 @@ BITS 32
     mov eax, PAGE_DIRECTORY_ADDR
     push eax
     call mmu_inicializar_dir_kernel
+    call mmu_inicializar_dir_idle
 
     ; inicializar el directorio de paginas
     mov eax, PAGE_DIRECTORY_ADDR
@@ -121,7 +123,6 @@ BITS 32
     ; inicializar todas las tsss
     ; inicializar entradas de la gdt de las tsss
     call tss_inicializar
-    xchg bx, bx
 
     ; inicializar el scheduler
     call sched_inicializar
@@ -135,13 +136,13 @@ BITS 32
     call habilitar_pic ;prende el pics
     sti
 
-
     ; cargar la tarea inicial
     mov ax, 23
     shl ax, 3
     ltr ax
 
     ; saltar a la primer tarea
+    xchg bx, bx
     jmp 0x88:0
 
     ; Ciclar infinitamente (por si algo sale mal...)

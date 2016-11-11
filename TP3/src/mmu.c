@@ -127,11 +127,126 @@ void mmu_inicializar_dir_kernel(unsigned int cr3) {
     }
 }
 
+void mmu_inicializar_dir_kernel_tarea(unsigned int cr3) {
+    // pd_entry* directorio_paginas = (pd_entry *) PAGE_DIRECTORY_ADDR;
+    pd_entry* directorio_paginas = (pd_entry *) cr3;    
+    
+    // seteamos en 0 todas las entradas para poder distinguir si las entradas ya fueron utilizadas
+    for (int i = 0; i < 1024; i++) {
+        directorio_paginas[i].p = 0;
+        directorio_paginas[i].rw = 0;
+        directorio_paginas[i].us = 0;
+        directorio_paginas[i].pwt = 0;
+        directorio_paginas[i].pcd = 0;
+        directorio_paginas[i].a = 0;
+        directorio_paginas[i].i = 0;
+        directorio_paginas[i].ps = 0;
+        directorio_paginas[i].g = 0;
+        directorio_paginas[i].avl = 0;
+        directorio_paginas[i].table_addr = 0;   
+    }
+
+    void* table0_addr = dame_pagina_libre_tierra();
+
+    // seteamos entrada 0 en el directorio de paginas
+    directorio_paginas[0].p = 1;
+    directorio_paginas[0].rw = 1;
+    directorio_paginas[0].us = 0;
+    directorio_paginas[0].pwt = 0;
+    directorio_paginas[0].pcd = 0;
+    directorio_paginas[0].a = 0;
+    directorio_paginas[0].i = 0;
+    directorio_paginas[0].ps = 0;
+    directorio_paginas[0].g = 0;
+    directorio_paginas[0].avl = 0;
+    directorio_paginas[0].table_addr = ((unsigned int) table0_addr) >> 12;
+
+    void* table1_addr = dame_pagina_libre_tierra();
+
+    // seteamos entrada 1 en el directorio de paginas
+    directorio_paginas[1].p = 1;
+    directorio_paginas[1].rw = 1;
+    directorio_paginas[1].us = 0;
+    directorio_paginas[1].pwt = 0;
+    directorio_paginas[1].pcd = 0;
+    directorio_paginas[1].a = 0;
+    directorio_paginas[1].i = 0;
+    directorio_paginas[1].ps = 0;
+    directorio_paginas[1].g = 0;
+    directorio_paginas[1].avl = 0;
+    directorio_paginas[1].table_addr = ((unsigned int) table1_addr) >> 12;
+    
+    pt_entry* tabla_paginas0 = (pt_entry *) table0_addr;
+    for (int i = 0; i < PAGE_TABLE0_COUNT; i++) {
+        tabla_paginas0[i].p = 1;
+        tabla_paginas0[i].rw = 1;
+        tabla_paginas0[i].us = 0;
+        tabla_paginas0[i].pwt = 0;
+        tabla_paginas0[i].pcd = 0;
+        tabla_paginas0[i].a = 0;
+        tabla_paginas0[i].d = 0;
+        tabla_paginas0[i].pat = 0;
+        tabla_paginas0[i].g = 0;
+        tabla_paginas0[i].avl = 0;
+        tabla_paginas0[i].page_addr = i;         
+    }
+
+    pt_entry* tabla_paginas1 = (pt_entry *) table1_addr;
+    for (int i = 0; i < PAGE_TABLE1_COUNT; i++) {
+        tabla_paginas1[i].p = 1;
+        tabla_paginas1[i].rw = 1;
+        tabla_paginas1[i].us = 0;
+        tabla_paginas1[i].pwt = 0;
+        tabla_paginas1[i].pcd = 0;
+        tabla_paginas1[i].a = 0;
+        tabla_paginas1[i].d = 0;
+        tabla_paginas1[i].pat = 0;
+        tabla_paginas1[i].g = 0;
+        tabla_paginas1[i].avl = 0;
+        tabla_paginas1[i].page_addr = i + 1024;         
+    }
+
+    /* Para los restantes 0.5 MB = 1024 - PAGE_TABLE1_COUNT = 1024 - 896 = 128 (descriptores de Tablas de Paginas) de la 2da tabla dejamos present en 0 */
+    for (int i = PAGE_TABLE1_COUNT; i < 1024; i++) {
+        tabla_paginas1[i].p = 0;
+        tabla_paginas1[i].rw = 0;
+        tabla_paginas1[i].us = 0;
+        tabla_paginas1[i].pwt = 0;
+        tabla_paginas1[i].pcd = 0;
+        tabla_paginas1[i].a = 0;
+        tabla_paginas1[i].d = 0;
+        tabla_paginas1[i].pat = 0;
+        tabla_paginas1[i].g = 0;
+        tabla_paginas1[i].avl = 0;
+        tabla_paginas1[i].page_addr = 0;         
+    }
+}
+
+void mmu_inicializar_dir_idle() {
+    // pedimos una pagina para el directorio de paginas de la tarea
+    // unsigned int directorio_paginas = (unsigned int) dame_pagina_libre_tierra();
+
+    // mmu_inicializar_dir_kernel(directorio_paginas);
+
+    // mapeamos pagina 1 (nivel 3)
+    mmu_mapear_pagina(0x40000000, 0x27000, 0x20000);
+    // mapeamos pagina 2 (nivel 3)
+    mmu_mapear_pagina(0x40001000, 0x27000, 0x21000);
+    // mapeamos pagina ancla (nivel 3)
+    // mmu_mapear_pagina(0x40002000, directorio_paginas, 0x0);
+    
+    // unsigned int direccion_codigo_tarea = (tarea - 1) * 0x2000 + 0x10000;
+    // copia primer pagina de la tarea a la memoria indicada
+    // copiar_pagina(direccion_codigo_tarea, fisica);
+    // copia segunda pagina de la tarea a la memoria indicada
+    // copiar_pagina(direccion_codigo_tarea + 0x1000, fisica + 0x1000);
+}
+
 unsigned int mmu_inicializar_dir_tarea(unsigned int tarea, unsigned int fisica) {
     // pedimos una pagina para el directorio de paginas de la tarea
     unsigned int directorio_paginas = (unsigned int) dame_pagina_libre_tierra();
 
-    // mmu_inicializar_dir_kernel(directorio_paginas);
+    mmu_inicializar_dir_kernel_tarea(directorio_paginas);
 
     // mapeamos pagina 1 (nivel 3)
     mmu_mapear_pagina(0x40000000, directorio_paginas, fisica);
@@ -141,6 +256,7 @@ unsigned int mmu_inicializar_dir_tarea(unsigned int tarea, unsigned int fisica) 
     mmu_mapear_pagina(0x40002000, directorio_paginas, 0x0);
     
     unsigned int direccion_codigo_tarea = (tarea - 1) * 0x2000 + 0x10000;
+
     // copia primer pagina de la tarea a la memoria indicada
     copiar_pagina(direccion_codigo_tarea, fisica);
     // copia segunda pagina de la tarea a la memoria indicada

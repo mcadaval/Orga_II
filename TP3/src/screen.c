@@ -78,7 +78,7 @@ void print_exception_message(unsigned int e) {
         "Exception 7: Device Not Available (No Math Coprocessor)",
         "Exception 8: Double Fault",
         "Exception 9: Coprocessor Segment Overrun",
-        "Exception 10: Invalid TTS",
+        "Exception 10: Invalid TSS",
         "Exception 11: Segment Not Present",
         "Exception 12: Stack Segment Fault",
         "Exception 13: General Protection",
