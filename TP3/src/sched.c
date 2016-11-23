@@ -19,24 +19,35 @@ unsigned short tarea_actual;
 unsigned short ultima_tarea;
 // indica la cantidad de tareas/banderas vivas
 unsigned short num_tareas_vivas;
+// indica si se esta ejecutando la tarea idle (1) o no (0)
+unsigned char tarea_idle;
+// indica la cantidad de banderas que se tienen que ejecutar en una vuelta 
+unsigned char cantidad_banderas;
 
 void sched_inicializar() {
     for (int i = 0; i < CANT_TAREAS; i++)
         arreglo_scheduler[i] = 1;
     tarea_actual = 0;
-    tarea = 0;
+    tarea = 1;
     contador_tareas = 0;
     ultima_tarea = 0;
     num_tareas_vivas = 8;
+    cantidad_banderas = 8;
+    tarea_idle = 1;
 }
 
 unsigned short sched_proximo_indice() {
     // si el reloj interrumpio a la tarea inicial entonces pasamos a la tarea 1 (posicion 1 de la GDT)
     if (tarea_actual == 0) {
+        tarea_actual = 1;
         ultima_tarea = 1;
         contador_tareas++;
         return 1;
     }
+
+    // si estamos corriendo idle entonces estamos por pasar a otra tarea / bandera
+    if (tarea_idle == 1)
+        tarea_idle = 0;
 
     // si estamos ejecutando tarea
     if (tarea == 1) {
@@ -44,7 +55,8 @@ unsigned short sched_proximo_indice() {
         if (contador_tareas == 3) {
             tarea = 0;
             contador_tareas = 1;
-            tarea_actual = obtener_siguiente_tarea_viva(1);
+            tarea_actual = obtener_siguiente_tarea_viva(0);
+            cantidad_banderas = num_tareas_vivas;
             return tarea_actual + 8;
         // sino seguimos ejecutando tareas (posiciones de la GDT entre 1 y 8)
         } else {
@@ -56,7 +68,7 @@ unsigned short sched_proximo_indice() {
     // si estamos ejecutando bandera
     } else {
         // si ya ejecutamos todas las banderas vivas cambiamos a tareas (posiciones de la GDT entre 1 y 8)
-        if (contador_tareas == num_tareas_vivas) {
+        if (contador_tareas == cantidad_banderas) {
             tarea = 1;
             contador_tareas = 1;
             tarea_actual = obtener_siguiente_tarea_viva(ultima_tarea);
@@ -69,6 +81,13 @@ unsigned short sched_proximo_indice() {
             return tarea_actual + 8;
         }
     }
+}
+
+// deuelve el id de la tarea actual
+unsigned short dame_tarea_actual() {
+    if (tarea_idle == 1)
+        return 17;
+    return tarea_actual;
 }
 
 unsigned short obtener_siguiente_tarea_viva(unsigned int desde) {
@@ -88,4 +107,8 @@ unsigned short obtener_siguiente_tarea_viva(unsigned int desde) {
 void matar_tarea() {
     arreglo_scheduler[tarea_actual-1] = 0;
     num_tareas_vivas--;
+}
+
+void actualizar_flag_idle() {
+    tarea_idle = 1;
 }

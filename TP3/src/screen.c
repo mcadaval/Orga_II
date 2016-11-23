@@ -159,6 +159,56 @@ void print_modo_estado() {
     for (int j = 0; j < VIDEO_COLS; j++) {
         print(" ", j, 24, C_BG_BLACK | C_FG_BLACK);
     }
+
+    // pintamos banderas
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+            print(" ", 2 + j, 3 + i, C_BG_RED | C_FG_BLACK);  
+        }
+    }
+
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+            print(" ", 14 + j, 3 + i, C_BG_BLUE | C_FG_BLACK);  
+        }
+    }
+    
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+            print(" ", 26 + j, 3 + i, C_BG_GREEN | C_FG_BLACK);  
+        }
+    }
+    
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+            print(" ", 38 + j, 3 + i, C_BG_CYAN | C_FG_BLACK);  
+        }
+    }
+
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+            print(" ", 2 + j, 9 + i, C_BG_BROWN | C_FG_BLACK);  
+        }
+    }
+
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+            print(" ", 14 + j, 9 + i, C_BG_MAGENTA | C_FG_BLACK);  
+        }
+    }
+
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+            print(" ", 26 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);  
+        }
+    }
+
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+            print(" ", 38 + j, 9 + i, C_BG_RED | C_FG_BLACK);  
+        }
+    }
+
 }
 
 void print_modo_mapa() {    

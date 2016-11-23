@@ -12,6 +12,8 @@
 #define VIDEO_FILS 25
 #define VIDEO_COLS 80
 #define VIDEO_SCREEN 0xB8000
+#define BANDERA_FILS 5
+#define BANDERA_COLS 10
 
 #include "colors.h"
 

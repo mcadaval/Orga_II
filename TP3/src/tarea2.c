@@ -52,25 +52,25 @@ void task()
 unsigned char *bandera()
 {
     ca(*buffer)[10] = (ca(*)[10]) (BANDERA_BUFFER);
-    int *b = (int *) (var_B);
-    unsigned int fil;
-    unsigned int col;
+    // int *b = (int *) (var_B);
+    // unsigned int fil;
+    // unsigned int col;
 
-    (*b)++;
+    // (*b)++;
 
-    if (*b == 11)
-        *b = 0;
+    // if (*b == 11)
+    //     *b = 0;
 
-    for (fil = 0; fil < 5; fil++) {
-        for (col = 0; col < 10; col++) {
-            buffer[fil][col].c = ' ';
+    // for (fil = 0; fil < 5; fil++) {
+    //     for (col = 0; col < 10; col++) {
+    //         buffer[fil][col].c = ' ';
 
-            if (col < *b)
-                buffer[fil][col].a = C_BG_GREEN | C_FG_GREEN;
-            else
-                buffer[fil][col].a = C_BG_BLUE | C_FG_BLUE;
-        }
-    }
+    //         if (col < *b)
+    //             buffer[fil][col].a = C_BG_GREEN | C_FG_GREEN;
+    //         else
+    //             buffer[fil][col].a = C_BG_BLUE | C_FG_BLUE;
+    //     }
+    // }
 
     syscall_bandera_fin((unsigned int) buffer);
 

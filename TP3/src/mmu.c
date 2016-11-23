@@ -229,9 +229,9 @@ void mmu_inicializar_dir_idle() {
     // mmu_inicializar_dir_kernel(directorio_paginas);
 
     // mapeamos pagina 1 (nivel 3)
-    mmu_mapear_pagina(0x40000000, 0x27000, 0x20000);
+    mmu_mapear_pagina(0x40000000, 0x27000, 0x20000, 0, 1);
     // mapeamos pagina 2 (nivel 3)
-    mmu_mapear_pagina(0x40001000, 0x27000, 0x21000);
+    mmu_mapear_pagina(0x40001000, 0x27000, 0x21000, 0, 1);
     // mapeamos pagina ancla (nivel 3)
     // mmu_mapear_pagina(0x40002000, directorio_paginas, 0x0);
     
@@ -249,11 +249,13 @@ unsigned int mmu_inicializar_dir_tarea(unsigned int tarea, unsigned int fisica) 
     mmu_inicializar_dir_kernel_tarea(directorio_paginas);
 
     // mapeamos pagina 1 (nivel 3)
-    mmu_mapear_pagina(0x40000000, directorio_paginas, fisica);
+    mmu_mapear_pagina(0x40000000, directorio_paginas, fisica, 1, 1);
     // mapeamos pagina 2 (nivel 3)
-    mmu_mapear_pagina(0x40001000, directorio_paginas, fisica + 0x1000);
+    mmu_mapear_pagina(0x40001000, directorio_paginas, fisica + 0x1000, 1, 1);
     // mapeamos pagina ancla (nivel 3)
-    mmu_mapear_pagina(0x40002000, directorio_paginas, 0x0);
+    mmu_mapear_pagina(0x40002000, directorio_paginas, 0x0, 1, 1);
+
+    
     
     unsigned int direccion_codigo_tarea = (tarea - 1) * 0x2000 + 0x10000;
 
@@ -265,7 +267,7 @@ unsigned int mmu_inicializar_dir_tarea(unsigned int tarea, unsigned int fisica) 
     return directorio_paginas;
 }
 
-void mmu_mapear_pagina(unsigned int virtual, unsigned int cr3, unsigned int fisica) {
+void mmu_mapear_pagina(unsigned int virtual, unsigned int cr3, unsigned int fisica, unsigned char us, unsigned char rw) {
     // accedemos a la entrada correspondiente en el directorio de paginas
     int pd_index = PDE_INDEX(virtual);
     pd_entry* directorio_paginas = (pd_entry*) cr3; 
@@ -273,8 +275,8 @@ void mmu_mapear_pagina(unsigned int virtual, unsigned int cr3, unsigned int fisi
     // verificamos si la entrada ya fue seteada previamente, y en caso de que no, la seteamos
     if (directorio_paginas[pd_index].p == 0) {
         directorio_paginas[pd_index].p = 1;
-        directorio_paginas[pd_index].rw = 1;
-        directorio_paginas[pd_index].us = 0;
+        directorio_paginas[pd_index].rw = rw;
+        directorio_paginas[pd_index].us = us;
         directorio_paginas[pd_index].pwt = 0;
         directorio_paginas[pd_index].pcd = 0;
         directorio_paginas[pd_index].a = 0;
@@ -311,8 +313,8 @@ void mmu_mapear_pagina(unsigned int virtual, unsigned int cr3, unsigned int fisi
 
     // mapeamos memoria seteando entrada en la tabla de paginas 
     tabla_paginas[pt_index].p = 1;
-    tabla_paginas[pt_index].rw = 1;
-    tabla_paginas[pt_index].us = 0;
+    tabla_paginas[pt_index].rw = rw;
+    tabla_paginas[pt_index].us = us;
     tabla_paginas[pt_index].pwt = 0;
     tabla_paginas[pt_index].pcd = 0;
     tabla_paginas[pt_index].a = 0;
@@ -321,6 +323,8 @@ void mmu_mapear_pagina(unsigned int virtual, unsigned int cr3, unsigned int fisi
     tabla_paginas[pt_index].g = 0;
     tabla_paginas[pt_index].avl = 0;
     tabla_paginas[pt_index].page_addr = fisica >> 12;
+
+    tlbflush();
 }
         
 

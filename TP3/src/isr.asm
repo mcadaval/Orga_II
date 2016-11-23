@@ -22,7 +22,15 @@ extern game_service
 
 ;; SCHED
 extern sched_proximo_indice
+extern dame_tarea_actual
 extern matar_tarea
+extern actualizar_flag_idle
+
+; extern contador_tareas
+; extern tarea
+; extern tarea_idle
+; extern num_tareas_vivas;
+
 
 ;;
 ;; Definición de MACROS
@@ -39,6 +47,7 @@ _isr%1:
     mov ecx, 0xFFF2
     mov edx, 0xFFF2
     push %1
+    ; xchg bx, bx
     call print_exception_message ;imprime mensaje de excepcion
     call matar_tarea             ;mata la tarea
     jmp 0x88:0                   ;cambia a tarea idle
@@ -86,24 +95,33 @@ ISR 20
 global _isr32
 
 _isr32:
-xchg bx, bx
+; xchg bx, bx
 pushad                       ;pushea todos los registros
+call fin_intr_pic1           ;llama al pic para avisarle que atendio una interrupcion
+call dame_tarea_actual
+mov bx, ax                   ;guarda en bx el id de la tarea actual
 call proximo_reloj           ;llama al proximo reloj
 call sched_proximo_indice    ;obtiene el proximo indice
 
-cmp ax, 0
-je .nojump
+; xor edx, edx
+; mov dl, [tarea_idle]        ;edx
+; xor ecx, ecx
+; mov cl, [tarea]             ;ecx
+; xor esi, esi
+; mov si, [contador_tareas]   ;esi
+; xor edi, edi
+; mov di, [num_tareas_vivas]  ;edi
+ 
+; xchg bx, bx
+
+cmp ax, bx                   ;verifica si el proximo indice es igual al indice que se ejecuta ahora 
+je .end                      ;si es igual, entonces no hay cambio de contexto
     shl ax, 3
     mov [selector], ax
-    call fin_intr_pic1       ;llama al pic para avisarle que atendio una interrupcion
     jmp far [offset]
-    jmp .end
-
-.nojump:
-    call fin_intr_pic1
 
 .end:
-    popad                        ;popea todos los registros
+    popad                    ;popea todos los registros
     iret
 ;;
 ;; Rutina de atención del TECLADO
@@ -129,13 +147,15 @@ global _isr80
 
 _isr80:
 pushad
+; xchg bx, bx
 mov edi, cr3
 push edi                   ;pushea parametros a la pila
 push ecx                   
 push ebx
 push eax
 call game_service          ;llama a game_service
-jmp 0x88:0        ;cambia a tarea idle 
+call actualizar_flag_idle  ;actualiza el flag que indica que la tarea idle esta corriendo
+jmp 0x88:0                 ;cambia a tarea idle 
 add esp, 16 
 popad                      ;popea todos los registros
 iret
@@ -143,10 +163,18 @@ iret
 global _isr102
 
 _isr102:
-mov eax, 0x42
+; xchg bx, bx
+pushad
+call actualizar_flag_idle  ;actualiza el flag que indica que la tarea idle esta corriendo
+str ax
+shr ax, 3
+cmp ax, 9
+jge .es_bandera
+call matar_tarea
 
-jmp 0x88:0           ;cambia a tarea idle
-
+.es_bandera:
+jmp 0x88:0                 ;cambia a tarea idle
+popad
 iret
 
 ;; Funciones Auxiliares

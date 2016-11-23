@@ -9,6 +9,7 @@ global start
 
 ;;DEFINES
 %define PAGE_DIRECTORY_ADDR 0x27000
+%define IDLE_SELECTOR        0x88
 
 ;; GDT
 extern GDT_DESC
@@ -142,8 +143,8 @@ BITS 32
     ltr ax
 
     ; saltar a la primer tarea
-    xchg bx, bx
-    jmp 0x88:0
+    ; xchg bx, bx
+    jmp IDLE_SELECTOR:0
 
     ; Ciclar infinitamente (por si algo sale mal...)
     mov eax, 0xFFFF

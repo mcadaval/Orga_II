@@ -60,7 +60,7 @@ void mmu_inicializar_dir_idle();
 void mmu_inicializar_dir_kernel();
 void mmu_inicializar_dir_kernel_tarea(unsigned int cr3);
 unsigned int mmu_inicializar_dir_tarea(unsigned int tarea, unsigned int fisica);
-void mmu_mapear_pagina(unsigned int virtual, unsigned int cr3, unsigned int fisica);
+void mmu_mapear_pagina(unsigned int virtual, unsigned int cr3, unsigned int fisica, unsigned char us, unsigned char rw);
 void mmu_unmapear_pagina(unsigned int virtual, unsigned int cr3);
 
 
