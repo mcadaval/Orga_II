@@ -16,6 +16,7 @@
 #define BANDERA_COLS 10
 
 #include "colors.h"
+#include "defines.h"
 
 /* Estructura de para acceder a memoria de video */
 typedef struct ca_s {
@@ -36,5 +37,19 @@ void print_exception_message(unsigned int e);
 void print_modo_estado();
 
 void print_modo_mapa();
+
+void flamear_bandera(unsigned char n);
+
+void imprimir_bandera(unsigned char n);
+
+void inicializar_pantalla();
+
+void guardar_estado_registros(unsigned int cr0, unsigned int cr2, unsigned int cr3, unsigned int cr4, unsigned int eax, unsigned int ebx, unsigned int ecx, unsigned int edx, unsigned int esi, unsigned int edi, unsigned int ebp, unsigned int ds, unsigned int es, unsigned int fs, unsigned int gs, unsigned int tarea, unsigned int errCode, unsigned int eip, unsigned int cs, unsigned int eflags, unsigned int esp, unsigned int ss);
+
+void imprimir_registros_y_excepcion();
+
+void registar_memoria_tarea(unsigned int tarea, unsigned char numero_pag, unsigned int fisica);
+
+void imprimir_excepciones_por_tarea();
 
 #endif  /* !__SCREEN_H__ */

@@ -16,6 +16,7 @@ extern fin_intr_pic1
 
 ;; SCREEN
 extern print_exception_message
+extern flamear_bandera
 
 ;; GAME
 extern game_service
@@ -41,14 +42,31 @@ global _isr%1
 
 _isr%1:
 .loopear:
-    ; To Infinity And Beyond!!
-    mov eax, 0xFFF2
-    mov ebx, 0xFFF2
-    mov ecx, 0xFFF2
-    mov edx, 0xFFF2
     push %1
     ; xchg bx, bx
-    call print_exception_message ;imprime mensaje de excepcion
+    ; push gs 
+    ; push fs
+    ; push es
+    ; push ds
+    ; push ebp
+    ; push edi
+    ; push esi
+    ; push edx
+    ; push ecx
+    ; push ebx
+    ; push eax
+
+    ; mov eax, cr4 
+    ; push eax
+    ; push eax, cr3
+    ; push eax
+    ; push eax, cr2
+    ; push eax
+    ; push eax, cr0
+    ; push eax 
+    ; call guardar_estado_registros
+
+    ; call print_exception_message ;imprime mensaje de excepcion
     call matar_tarea             ;mata la tarea
     jmp 0x88:0                   ;cambia a tarea idle
     jmp $
@@ -112,7 +130,7 @@ call sched_proximo_indice    ;obtiene el proximo indice
 ; xor edi, edi
 ; mov di, [num_tareas_vivas]  ;edi
  
-; xchg bx, bx
+xchg bx, bx
 
 cmp ax, bx                   ;verifica si el proximo indice es igual al indice que se ejecuta ahora 
 je .end                      ;si es igual, entonces no hay cambio de contexto
@@ -147,7 +165,7 @@ global _isr80
 
 _isr80:
 pushad
-; xchg bx, bx
+xchg bx, bx
 mov edi, cr3
 push edi                   ;pushea parametros a la pila
 push ecx                   
@@ -163,7 +181,7 @@ iret
 global _isr102
 
 _isr102:
-; xchg bx, bx
+xchg bx, bx
 pushad
 call actualizar_flag_idle  ;actualiza el flag que indica que la tarea idle esta corriendo
 str ax
@@ -173,6 +191,10 @@ jge .es_bandera
 call matar_tarea
 
 .es_bandera:
+; xor eax, eax
+; call dame_tarea_actual
+; push eax
+; call flamear_bandera
 jmp 0x88:0                 ;cambia a tarea idle
 popad
 iret

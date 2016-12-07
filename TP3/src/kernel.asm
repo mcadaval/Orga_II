@@ -31,6 +31,7 @@ extern habilitar_pic
 extern screen_pintar_pantalla
 extern print_modo_estado
 extern print_modo_mapa
+extern inicializar_pantalla
 
 ;; TSS
 extern tss_inicializar
@@ -100,7 +101,9 @@ BITS 32
     mov esp, 0x27000
 
     ; pintar pantalla, todos los colores, que bonito!
-    call screen_pintar_pantalla
+    ; call screen_pintar_pantalla
+    call inicializar_pantalla
+    call print_modo_estado
 
     ; inicializar el manejador de memoria
     mov eax, PAGE_DIRECTORY_ADDR
@@ -143,7 +146,7 @@ BITS 32
     ltr ax
 
     ; saltar a la primer tarea
-    ; xchg bx, bx
+    xchg bx, bx
     jmp IDLE_SELECTOR:0
 
     ; Ciclar infinitamente (por si algo sale mal...)

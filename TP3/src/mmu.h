@@ -9,7 +9,7 @@
 #define __MMU_H__
 
 #include "i386.h"
-
+  
 #define PAGE_DIRECTORY_ADDR 0x27000
 #define PAGE_TABLE0_COUNT 1024
 #define PAGE_TABLE1_COUNT 896
