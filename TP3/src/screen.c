@@ -294,43 +294,110 @@ void print_modo_estado() {
 
     for (int i = 0; i < BANDERA_FILS; i++) {
         for (int j = 0; j < BANDERA_COLS; j++) {
-            print(" ", 14 + j, 3 + i, C_BG_BLUE | C_FG_BLACK);  
+            if (j < 5)
+                print(" ", 14 + j, 3 + i, C_BG_BLUE | C_FG_BLACK);
+            else
+                print(" ", 14 + j, 3 + i, C_BG_GREEN | C_FG_BLACK);
         }
     }
     
     for (int i = 0; i < BANDERA_FILS; i++) {
         for (int j = 0; j < BANDERA_COLS; j++) {
-            print(" ", 26 + j, 3 + i, C_BG_GREEN | C_FG_BLACK);  
+            if (j < 2)
+                print(" ", 26 + j, 3 + i, C_BG_GREEN | C_FG_BLACK);
+            else if (2 <= j && j < 4)
+                print(" ", 26 + j, 3 + i, C_BG_BROWN | C_FG_BLACK);
+            else if ( 4 <= j && j < 6)
+                print(" ", 26 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+            else if ( 6 <= j && j < 8)
+                print(" ", 26 + j, 3 + i, C_BG_CYAN | C_FG_BLACK);
+            else if ( 8 <= j && j < 10)
+                print(" ", 26 + j, 3 + i, C_BG_BLUE | C_FG_BLACK);
+
         }
     }
     
     for (int i = 0; i < BANDERA_FILS; i++) {
         for (int j = 0; j < BANDERA_COLS; j++) {
-            print(" ", 38 + j, 3 + i, C_BG_CYAN | C_FG_BLACK);  
+            if ( i < 2)
+                print(" ", 38 + j, 3 + i, C_BG_CYAN | C_FG_BLACK);
+            else if (i == 2)
+                print(" ", 38 + j, 3 + i, C_BG_BLACK | C_FG_BLACK); 
+            else if ( i > 2)
+                print(" ", 38 + j, 3 + i, C_BG_BROWN | C_FG_BLACK);   
         }
     }
 
     for (int i = 0; i < BANDERA_FILS; i++) {
         for (int j = 0; j < BANDERA_COLS; j++) {
-            print(" ", 2 + j, 9 + i, C_BG_BROWN | C_FG_BLACK);  
+                print(" ", 2 + j, 9 + i, C_BG_BROWN | C_FG_BLACK);
+            if ( i == 0 && j < 3)
+                print(" ", 2 + j, 9 + i, C_BG_BLUE | C_FG_BLACK); 
+            else if ( i == 1 && j > 0 && j < 5)
+                print(" ", 2 + j, 9 + i, C_BG_BLUE | C_FG_BLACK);
+            else if ( i == 2 && j > 2 && j < 7)
+                print(" ", 2 + j, 9 + i, C_BG_BLUE | C_FG_BLACK);
+            else if ( i == 3 && j > 4 && j < 9)
+                print(" ", 2 + j, 9 + i, C_BG_BLUE | C_FG_BLACK);
+            else if ( i == 4 && j > 6 && j < 10)
+                print(" ", 2 + j, 9 + i, C_BG_BLUE | C_FG_BLACK);
+
         }
     }
 
     for (int i = 0; i < BANDERA_FILS; i++) {
         for (int j = 0; j < BANDERA_COLS; j++) {
-            print(" ", 14 + j, 9 + i, C_BG_MAGENTA | C_FG_BLACK);  
+            print(" ", 14 + j, 9 + i, C_BG_BLUE | C_FG_BLACK);
+            if ( i == 0 && (j == 8 || j == 9 || j == 7))
+                print(" ", 14 + j, 9 + i, C_BG_BROWN | C_FG_BLACK);
+            else if ( i == 1 && ( j == 2 || j == 4))
+                print(" ", 14 + j, 9 + i, C_BG_MAGENTA | C_FG_BLACK);
+            else if ( i == 1 && ( j == 8 || j == 9 || j == 7))
+                print(" ", 14 + j, 9 + i, C_BG_BROWN | C_FG_BLACK);
+            else if ( i == 2 &&  j == 3 )
+                print(" ", 14 + j, 9 + i, C_BG_MAGENTA | C_FG_BLACK);
+             else if ( i == 2 &&  ( j == 8 || j == 9 || j == 7) )
+                print(" ", 14 + j, 9 + i, C_BG_BROWN | C_FG_BLACK);
+            else if ( i == 3 && ( j == 2 || j == 4))
+                print(" ", 14 + j, 9 + i, C_BG_MAGENTA | C_FG_BLACK);
+            else if ( i == 4 &&  j == 1)
+                print(" ", 14 + j, 9 + i, C_BG_MAGENTA | C_FG_BLACK);
+
         }
     }
 
     for (int i = 0; i < BANDERA_FILS; i++) {
         for (int j = 0; j < BANDERA_COLS; j++) {
-            print(" ", 26 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);  
+            print(" ", 26 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
+            if ( i == 0 && j > 2 && j < 7)
+                print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+            else if ( i == 1 && (j == 2 || j == 4 || j == 5 || j == 7)) 
+                print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+            else if ( i == 2 && j > 1 && j < 8)  
+                print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+            else if ( i == 3 && (j == 3 || j == 6))  
+                print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+            else if ( i == 4 && (j == 4 || j == 5))  
+                print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+            
+
         }
     }
 
     for (int i = 0; i < BANDERA_FILS; i++) {
         for (int j = 0; j < BANDERA_COLS; j++) {
-            print(" ", 38 + j, 9 + i, C_BG_RED | C_FG_BLACK);  
+            print(" ", 38 + j, 9 + i, C_BG_CYAN | C_FG_BLACK);
+            if ( i == 0 && (j == 2 || j == 7))
+                print(" ", 38 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
+            else if ( i == 1 && ( j == 2 || j == 4 || j == 5 || j == 7))
+                print(" ", 38 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
+            else if ( i == 2 && ( j > 1 && j < 8))
+                print(" ", 38 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
+            else if ( i == 3 && ( j == 2 || j == 4 || j == 5 || j == 7))
+                print(" ", 38 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
+            else if ( i == 4 && (j == 2 || j == 7))
+                print(" ", 38 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
+
         }
     }
 
