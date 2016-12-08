@@ -112,3 +112,12 @@ void matar_tarea() {
 void actualizar_flag_idle() {
     tarea_idle = 1;
 }
+
+unsigned char tarea_activa(unsigned int tarea) {
+    return arreglo_scheduler[tarea-1];
+}
+
+// indica si se esta ejecutando una tarea o una bandera en el momento en que es invocada (1 es tarea, 0 es bandera)
+unsigned char es_tarea() {
+    return tarea;
+}

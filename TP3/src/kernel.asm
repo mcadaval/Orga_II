@@ -102,8 +102,8 @@ BITS 32
 
     ; pintar pantalla, todos los colores, que bonito!
     ; call screen_pintar_pantalla
-    call inicializar_pantalla
-    call print_modo_estado
+    ; call inicializar_pantalla
+    ; call print_modo_estado
 
     ; inicializar el manejador de memoria
     mov eax, PAGE_DIRECTORY_ADDR
@@ -130,6 +130,8 @@ BITS 32
 
     ; inicializar el scheduler
     call sched_inicializar
+    call inicializar_pantalla
+    call print_modo_estado
 
     ; inicializar la IDT
     call idt_inicializar

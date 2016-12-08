@@ -102,6 +102,13 @@ void print_int(unsigned int n, unsigned int x, unsigned int y, unsigned short at
     p[y][x].a = attr;
 }
 
+// imprime un char a partir de la posicion y,x de la pantalla con los colores indicados por attr
+void print_char(char n, unsigned int x, unsigned int y, unsigned short attr) {
+    ca (*p)[VIDEO_COLS] = (ca (*)[VIDEO_COLS]) VIDEO_SCREEN;
+    p[y][x].c = n;
+    p[y][x].a = attr;
+}
+
 // pinta la pantalla entera de negro
 void screen_pintar_pantalla() {
     ca (*p)[VIDEO_COLS] = (ca (*)[VIDEO_COLS]) VIDEO_SCREEN;
@@ -147,7 +154,7 @@ void print_modo_estado() {
     }
     print("Casa Danzante - Frank Gehry", 0, 0, C_BG_BLACK | C_FG_WHITE);
 
-    // pintamos fondo blanco en las siguientes 15 filas (1 a 15)
+    // pintamos fondo gris en las siguientes 15 filas (1 a 15)
     for (int i = 1; i < 16; i++) {
         for (int j = 0; j < VIDEO_COLS; j++) {
             print(" ", j, i, C_BG_LIGHT_GREY | C_FG_WHITE);
@@ -186,7 +193,7 @@ void print_modo_estado() {
         print(message[i-2], 51, i, C_BG_BLACK | C_FG_WHITE);
     }
 
-    // pintamos contenidos de registros en el cuadro de la derecha y excepciones 
+    // pintamos contenidos de registros en el cuadro de la derecha y excepciones si es que hay
     if (ultima_excepcion != -1) {
         imprimir_registros_y_excepcion();
         imprimir_excepciones_por_tarea();
@@ -194,30 +201,85 @@ void print_modo_estado() {
 
     // pintamos las siguientes 8 filas (16 a 23) 
     for (int i = 16; i < 24; i++) {
+        unsigned char color;
+        // elegimos color para cada linea dependiendo de si la tarea esta viva o no
+        if (tarea_activa(i-15) == 1)
+            color = C_BG_CYAN | C_FG_BLACK;
+        else
+            color = C_BG_RED | C_FG_WHITE;
+
         for (int j = 0; j < VIDEO_COLS; j++) {
-            // si es la primer o ultima columna fondo negro
-            if (j == 0 || j == VIDEO_COLS - 1) {
-                print(" ", j, i, C_BG_BLACK | C_FG_BLACK);
-            // si es la segunda columna fondo blanco y numero entre 1 y 8
-            } else if (j == 1) {
-                print_int(i - 15, j, i, C_BG_LIGHT_GREY | C_FG_BLACK);
-            // si es cualquier otra columna fondo azul
-            } else {
-                print(" ", j, i, C_BG_CYAN | C_FG_BLACK);
+            switch(j) {
+                case 0:
+                case VIDEO_COLS - 1:
+                    print(" ", j, i, C_BG_BLACK | C_FG_BLACK);
+                    break;
+                case 1:
+                    print_int(i - 15, j, i, C_BG_LIGHT_GREY | C_FG_BLACK);
+                    break;
+                case 3:
+                    print("P1:", j, i, color);
+                    j += 2;
+                    break;
+                case 17:
+                    print("P2:", j, i, color);
+                    j += 2;
+                    break;
+                case 31: 
+                    print("P3:", j, i, color);
+                    j += 2;
+                    break;
+                // case 50:
+                //     if (excepciones_tareas[i-16] == -1) {
+                //        print("                             ", j, i, color);
+                //     } else {
+                //         print(excepciones[excepciones_tareas[i-16]], j, i, color);
+                //     }
+                //     j += 27;
+                //     break;
+                default:
+                    print(" ", j, i, color);
+                    break;
             }
         }
     }
 
-    // for (int i = 16; i < 24; i++) {
-    //     print("P1:", 3, i, C_BG_BLACK | C_FG_WHITE);
-    //     print("P2:", 3, i, C_BG_BLACK | C_FG_WHITE);
+    // imprime la ultima excepcion para cada tarea
+    imprimir_excepciones_por_tarea();
 
-    // }
-
-    // pintamos fondo negro en la última linea (24)
+    // pintamos última linea (24)
     for (int j = 0; j < VIDEO_COLS; j++) {
         print(" ", j, 24, C_BG_BLACK | C_FG_BLACK);
     }
+
+    // imprimimos numeros de los relojes de tareas
+    unsigned int num = 1;
+    for (int i = 4; i < 26; i++) {
+        unsigned char color;
+        if (tarea_activa(num) == 1)
+            color = C_BG_LIGHT_GREY | C_FG_BLACK;
+        else
+            color = C_BG_RED | C_FG_WHITE;
+        print_int(num, i, 24, color);
+        num++;
+        i += 2;
+    }
+
+    // imprimimos numeros de los relojes de banderas
+    num = 1;
+    for (int i = 32; i < 54; i++) {
+        unsigned char color;
+        if (tarea_activa(num) == 1)
+            color = C_BG_BROWN | C_FG_BLACK;
+        else
+            color = C_BG_RED | C_FG_WHITE;
+        print_int(num, i, 24, color);
+        num++;
+        i += 2;
+    }
+
+    // imprimimos todos los relojes
+    imprimir_relojes();
 
 
     // pintamos banderas
@@ -373,8 +435,6 @@ void inicializar_pantalla() {
     // incializamos estructuras utilizadas para imprimir con valores default
     modo_pantalla = 0;
     inicializar_banderas();
-    // relojes_tareas[CANT_TAREAS] = {'|', '|', '|', '|', '|', '|', '|', '|'};
-    // relojes_banderas[CANT_TAREAS] = {'|', '|', '|', '|', '|', '|', '|', '|'};
     ultima_excepcion = -1;
     for (int i = 0; i < CANT_TAREAS; i++) {
         memoria_tareas[i][0] = 0x0;
@@ -444,4 +504,99 @@ void imprimir_excepciones_por_tarea() {
 
 void registar_memoria_tarea(unsigned int tarea, unsigned char numero_pag, unsigned int fisica) {
     memoria_tareas[tarea-1][numero_pag-1] = fisica;
+}
+
+// imprime todos los relojes
+void imprimir_relojes() {
+    // imprimimos relojes tareas
+    unsigned int x = 5;
+    unsigned int y = 24;
+    for (int i = 0; i < CANT_TAREAS; i++) {
+        unsigned char color;
+        if (tarea_activa(i+1) == 1)
+            color = C_BG_LIGHT_GREY | C_FG_BLACK;
+        else
+            color = C_BG_RED | C_FG_WHITE;
+        print_char(relojes_tareas[i], x, y, color);
+        x += 3;
+    }
+
+    // imprimimos relojes banderas
+    x = 33;
+    for (int i = 0; i < CANT_TAREAS; i++) {
+        unsigned char color;
+        if (tarea_activa(i+1) == 1)
+            color = C_BG_BROWN | C_FG_BLACK;
+        else
+            color = C_BG_RED | C_FG_WHITE;
+        print_char(relojes_banderas[i], x, y, color);
+        x += 3;
+    }
+}
+
+// actualiza el reloj de la tarea/bandera que se esta ejecutando, y lo imprime
+void actualizar_reloj_actual() {
+    // nos fijamos si estamos ejecutando una tarea o una bandera
+    unsigned int offset;
+    char reloj; 
+    unsigned short tarea = dame_tarea_actual();
+    // si es idle salimos, no hay nada que hacer
+    if (tarea == 17) return;
+    unsigned char color;
+    if (es_tarea() == 1) {
+        offset = 5;
+        relojes_tareas[tarea-1] = siguiente_reloj(relojes_tareas[tarea-1]);
+        reloj = relojes_tareas[tarea-1];
+        color = C_BG_LIGHT_GREY | C_FG_BLACK;
+    } else {
+        offset = 33;
+        relojes_banderas[tarea-1] = siguiente_reloj(relojes_banderas[tarea-1]);
+        reloj = relojes_banderas[tarea-1];
+        color = C_BG_BROWN | C_FG_BLACK;
+    }
+
+    print_char(reloj, offset+(tarea-1)*3, 24, color);
+}
+
+// dada la posicion de un reloj devuelve la siguiente posicion
+char siguiente_reloj(char reloj) {
+    if (reloj == '|') return '/';
+    if (reloj == '/') return '-';
+    if (reloj == '-') return '\\';
+    return '|';
+}
+
+void matar_en_screen() {
+    unsigned short tarea = dame_tarea_actual();
+    relojes_tareas[tarea-1] = ' ';
+    relojes_banderas[tarea-1] = ' ';
+
+    // imprimimos numeros de los relojes de tareas
+    unsigned int num = 1;
+    for (int i = 4; i < 26; i++) {
+        unsigned char color;
+        if (tarea_activa(num) == 1)
+            color = C_BG_LIGHT_GREY | C_FG_BLACK;
+        else
+            color = C_BG_RED | C_FG_WHITE;
+        print_int(num, i, 24, color);
+        num++;
+        i += 2;
+    }
+
+    // imprimimos numeros de los relojes de banderas
+    num = 1;
+    for (int i = 32; i < 54; i++) {
+        unsigned char color;
+        if (tarea_activa(num) == 1)
+            color = C_BG_BROWN | C_FG_BLACK;
+        else
+            color = C_BG_RED | C_FG_WHITE;
+        print_int(num, i, 24, color);
+        num++;
+        i += 2;
+    }
+
+    // imprimimos todos los relojes
+    imprimir_relojes();
 }

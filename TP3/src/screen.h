@@ -52,4 +52,12 @@ void registar_memoria_tarea(unsigned int tarea, unsigned char numero_pag, unsign
 
 void imprimir_excepciones_por_tarea();
 
+void imprimir_relojes();
+
+char siguiente_reloj(char reloj);
+
+void matar_en_screen();
+
+
+
 #endif  /* !__SCREEN_H__ */
