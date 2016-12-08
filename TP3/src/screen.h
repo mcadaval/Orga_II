@@ -58,6 +58,8 @@ char siguiente_reloj(char reloj);
 
 void matar_en_screen();
 
+void matar_bandera(unsigned short tarea);
+
 
 
 #endif  /* !__SCREEN_H__ */

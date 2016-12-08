@@ -20,6 +20,7 @@ extern flamear_bandera
 extern actualizar_reloj_actual
 extern print_modo_estado
 extern matar_en_screen
+extern matar_bandera
 
 ;; GAME
 extern game_service

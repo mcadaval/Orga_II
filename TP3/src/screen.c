@@ -646,6 +646,7 @@ void matar_en_screen() {
             color = C_BG_LIGHT_GREY | C_FG_BLACK;
         else
             color = C_BG_RED | C_FG_WHITE;
+        matar_bandera(tarea-1);
         print_int(num, i, 24, color);
         num++;
         i += 2;
@@ -663,7 +664,144 @@ void matar_en_screen() {
         num++;
         i += 2;
     }
-
     // imprimimos todos los relojes
     imprimir_relojes();
 }
+
+void matar_bandera(unsigned short tarea){
+    if (tarea == 0)
+        for (int i = 0; i < BANDERA_FILS; i++) {
+            for (int j = 0; j < BANDERA_COLS; j++) {
+                print(" ", 2 + j, 3 + i, C_BG_BLACK | C_FG_BLACK);
+                if (i == 0 && (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 7 || j == 8))
+                    print(" ", 2 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 1 && ( j == 0 || j == 2 || j == 4 || j == 6 || j == 8))
+                    print(" ", 2 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 2 && ( j == 0 || j == 1 || j == 4 || j == 6 || j == 7 || j == 8))
+                    print(" ", 2 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 3 && ( j == 0 || j == 2 || j == 4 || j == 6))
+                    print(" ", 2 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 4 && ( j == 0 || j == 2 || j == 4 || j == 6 ))
+                    print(" ", 2 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+             }   
+        }
+    else if (tarea == 1)
+        for (int i = 0; i < BANDERA_FILS; i++) {
+            for (int j = 0; j < BANDERA_COLS; j++) {
+                print(" ", 14 + j, 3 + i, C_BG_BLACK | C_FG_BLACK);
+                if (i == 0 && (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 7 || j == 8))
+                    print(" ", 14 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 1 && ( j == 0 || j == 2 || j == 4 || j == 6 || j == 8))
+                    print(" ", 14 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 2 && ( j == 0 || j == 1 || j == 4 || j == 6 || j == 7 || j == 8))
+                   print(" ", 14 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 3 && ( j == 0 || j == 2 || j == 4 || j == 6))
+                    print(" ", 14 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 4 && ( j == 0 || j == 2 || j == 4 || j == 6 ))
+                    print(" ", 14 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+             }   
+        }
+    else if (tarea == 2)
+        for (int i = 0; i < BANDERA_FILS; i++) {
+            for (int j = 0; j < BANDERA_COLS; j++) {
+                print(" ", 26 + j, 3 + i, C_BG_BLACK | C_FG_BLACK);
+                if (i == 0 && (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 7 || j == 8))
+                    print(" ", 26 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 1 && ( j == 0 || j == 2 || j == 4 || j == 6 || j == 8))
+                    print(" ", 26 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 2 && ( j == 0 || j == 1 || j == 4 || j == 6 || j == 7 || j == 8))
+                   print(" ", 26 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 3 && ( j == 0 || j == 2 || j == 4 || j == 6))
+                    print(" ", 26 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 4 && ( j == 0 || j == 2 || j == 4 || j == 6 ))
+                   print(" ", 26 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+             }   
+        }
+    else if (tarea == 3)
+        for (int i = 0; i < BANDERA_FILS; i++) {
+            for (int j = 0; j < BANDERA_COLS; j++) {
+                print(" ", 38 + j, 3 + i, C_BG_BLACK | C_FG_BLACK);
+                if (i == 0 && (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 7 || j == 8))
+                    print(" ", 38 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 1 && ( j == 0 || j == 2 || j == 4 || j == 6 || j == 8))
+                   print(" ", 38 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 2 && ( j == 0 || j == 1 || j == 4 || j == 6 || j == 7 || j == 8))
+                   print(" ", 38 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 3 && ( j == 0 || j == 2 || j == 4 || j == 6))
+                   print(" ", 38 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 4 && ( j == 0 || j == 2 || j == 4 || j == 6 ))
+                  print(" ", 38 + j, 3 + i, C_BG_RED | C_FG_BLACK);
+             }   
+        }
+    else if (tarea == 4)
+        for (int i = 0; i < BANDERA_FILS; i++) {
+            for (int j = 0; j < BANDERA_COLS; j++) {
+                print(" ", 2 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
+                if (i == 0 && (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 7 || j == 8))
+                    print(" ", 2 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 1 && ( j == 0 || j == 2 || j == 4 || j == 6 || j == 8))
+                    print(" ", 2 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 2 && ( j == 0 || j == 1 || j == 4 || j == 6 || j == 7 || j == 8))
+                    print(" ", 2 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 3 && ( j == 0 || j == 2 || j == 4 || j == 6))
+                    print(" ", 2 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 4 && ( j == 0 || j == 2 || j == 4 || j == 6 ))
+                    print(" ", 2 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+             }   
+        }
+    else if (tarea == 5)
+        for (int i = 0; i < BANDERA_FILS; i++) {
+            for (int j = 0; j < BANDERA_COLS; j++) {
+                print(" ", 14 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
+                if (i == 0 && (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 7 || j == 8))
+                    print(" ", 14 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 1 && ( j == 0 || j == 2 || j == 4 || j == 6 || j == 8))
+                    print(" ", 14 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 2 && ( j == 0 || j == 1 || j == 4 || j == 6 || j == 7 || j == 8))
+                    print(" ", 14 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 3 && ( j == 0 || j == 2 || j == 4 || j == 6))
+                    print(" ", 14 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 4 && ( j == 0 || j == 2 || j == 4 || j == 6 ))
+                    print(" ", 14 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+             }   
+        }
+    else if (tarea == 6)
+        for (int i = 0; i < BANDERA_FILS; i++) {
+            for (int j = 0; j < BANDERA_COLS; j++) {
+                print(" ", 26 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
+                if (i == 0 && (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 7 || j == 8))
+                    print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 1 && ( j == 0 || j == 2 || j == 4 || j == 6 || j == 8))
+                    print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 2 && ( j == 0 || j == 1 || j == 4 || j == 6 || j == 7 || j == 8))
+                    print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 3 && ( j == 0 || j == 2 || j == 4 || j == 6))
+                    print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 4 && ( j == 0 || j == 2 || j == 4 || j == 6 ))
+                    print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+             }   
+        }
+    else if (tarea == 7)
+        for (int i = 0; i < BANDERA_FILS; i++) {
+            for (int j = 0; j < BANDERA_COLS; j++) {
+                print(" ", 38 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
+                if (i == 0 && (j == 0 || j == 1 || j == 2 || j == 4 || j == 6 || j == 7 || j == 8))
+                    print(" ", 38 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 1 && ( j == 0 || j == 2 || j == 4 || j == 6 || j == 8))
+                    print(" ", 38 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 2 && ( j == 0 || j == 1 || j == 4 || j == 6 || j == 7 || j == 8))
+                    print(" ", 38 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 3 && ( j == 0 || j == 2 || j == 4 || j == 6))
+                    print(" ", 38 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+                else if ( i == 4 && ( j == 0 || j == 2 || j == 4 || j == 6 ))
+                    print(" ", 38 + j, 9 + i, C_BG_RED | C_FG_BLACK);
+             }   
+        }       
+}
+
+  
+
+
+
+ 
+   
