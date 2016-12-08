@@ -90,6 +90,11 @@ unsigned short dame_tarea_actual() {
     return tarea_actual;
 }
 
+// deuelve el id de la tarea acutal si es que se ejecuta, o de la ultima ejecutada en caso de estar ejecutando idle
+unsigned short dame_tarea_no_idle() {
+    return tarea_actual;
+}
+
 unsigned short obtener_siguiente_tarea_viva(unsigned int desde) {
     unsigned char encontrado = 0;
     unsigned int actual = desde;
@@ -120,4 +125,8 @@ unsigned char tarea_activa(unsigned int tarea) {
 // indica si se esta ejecutando una tarea o una bandera en el momento en que es invocada (1 es tarea, 0 es bandera)
 unsigned char es_tarea() {
     return tarea;
+}
+
+unsigned char actual_es_idle() {
+    return tarea_idle;
 }

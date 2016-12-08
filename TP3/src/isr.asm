@@ -71,7 +71,6 @@ _isr%1:
     ; call guardar_estado_registros
 
     ; call print_exception_message ;imprime mensaje de excepcion
-    call actualizar_reloj_actual ;actualiza el reloj de la tarea actual    
     call matar_tarea             ;mata la tarea
     call matar_en_screen
     ; call print_modo_estado
@@ -143,7 +142,7 @@ cmp ax, bx                   ;verifica si el proximo indice es igual al indice q
 je .end                      ;si es igual, entonces no hay cambio de contexto
     shl ax, 3
     mov [selector], ax
-xchg bx, bx
+    xchg bx, bx
     jmp far [offset]
 
 .end:
@@ -174,7 +173,6 @@ global _isr80
 _isr80:
 pushad
 xchg bx, bx
-call actualizar_reloj_actual ;actualiza el reloj de la tarea actual
 mov edi, cr3
 push edi                   ;pushea parametros a la pila
 push ecx                   
@@ -193,8 +191,6 @@ global _isr102
 _isr102:
 xchg bx, bx
 pushad
-call actualizar_reloj_actual ;actualiza el reloj de la tarea actual
-call actualizar_flag_idle  ;actualiza el flag que indica que la tarea idle esta corriendo
 str ax
 shr ax, 3
 cmp ax, 9
@@ -206,7 +202,8 @@ call matar_en_screen
 ; xor eax, eax
 ; call dame_tarea_actual
 ; push eax
-; call flamear_bandera
+call flamear_bandera
+call actualizar_flag_idle  ;actualiza el flag que indica que la tarea idle esta corriendo
 xchg bx, bx
 jmp 0x88:0                 ;cambia a tarea idle
 popad

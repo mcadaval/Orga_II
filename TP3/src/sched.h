@@ -18,6 +18,10 @@ void matar_tarea();
 void actualizar_flag_idle();
 unsigned char tarea_activa(unsigned int tarea);
 unsigned char es_tarea();
+unsigned char actual_es_idle();
+unsigned short dame_tarea_no_idle();
+
+
 
 unsigned short contador_tareas;
 unsigned char tarea;

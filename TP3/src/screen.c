@@ -464,17 +464,16 @@ void anular_bandera(unsigned char n) {
     }
 }
 
-void flamear_bandera(unsigned char n) {
-    // breakpoint();
-    if (modo_pantalla == 2) {
-        ca (*buffer)[10] = (ca(*)[10]) BANDERA_BUFFER;
-        for (int i = 0; i < BANDERA_FILS; i++) {
-            for (int j = 0; j < BANDERA_COLS; j++) {
-                banderas[n-1][i][j] = buffer[i][j];
-            }
+void flamear_bandera() {
+    unsigned short tarea = dame_tarea_actual();
+    ca (*buffer)[10] = (ca(*)[10]) BANDERA_BUFFER;
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+            banderas[tarea-1][i][j].c = buffer[i][j].c;
+            banderas[tarea-1][i][j].a = buffer[i][j].a;
         }
-        imprimir_bandera(n);
     }
+    imprimir_bandera(tarea);
 }
 
 void imprimir_bandera(unsigned char n) {
@@ -493,7 +492,8 @@ void imprimir_bandera(unsigned char n) {
     // pegamos bandera en pantalla
     for (int i = 0; i < BANDERA_FILS; i++) {
         for (int j = 0; j < BANDERA_COLS; j++) {
-            p[i+offset_filas][j+offset_columnas] = banderas[n-1][i][j];
+            ca aux = banderas[n-1][i][j];
+            p[offset_filas+i][offset_columnas+j] = aux;
         }
     } 
 }
@@ -606,9 +606,13 @@ void actualizar_reloj_actual() {
     // nos fijamos si estamos ejecutando una tarea o una bandera
     unsigned int offset;
     char reloj; 
-    unsigned short tarea = dame_tarea_actual();
-    // si es idle salimos, no hay nada que hacer
-    if (tarea == 17) return;
+    unsigned short tarea = dame_tarea_no_idle();
+    // si es idle o la tarea murio salimos, no hay nada que hacer
+    if (tarea == 0 || tarea_activa(tarea) == 0){
+        breakpoint();
+        return;
+    }
+    
     unsigned char color;
     if (es_tarea() == 1) {
         offset = 5;
@@ -621,8 +625,7 @@ void actualizar_reloj_actual() {
         reloj = relojes_banderas[tarea-1];
         color = C_BG_BROWN | C_FG_BLACK;
     }
-
-    print_char(reloj, offset+(tarea-1)*3, 24, color);
+        print_char(reloj, offset+(tarea-1)*3, 24, color);
 }
 
 // dada la posicion de un reloj devuelve la siguiente posicion
@@ -638,38 +641,20 @@ void matar_en_screen() {
     relojes_tareas[tarea-1] = ' ';
     relojes_banderas[tarea-1] = ' ';
 
-    // imprimimos numeros de los relojes de tareas
-    unsigned int num = 1;
-    for (int i = 4; i < 26; i++) {
-        unsigned char color;
-        if (tarea_activa(num) == 1)
-            color = C_BG_LIGHT_GREY | C_FG_BLACK;
-        else
-            color = C_BG_RED | C_FG_WHITE;
-        matar_bandera(tarea-1);
-        print_int(num, i, 24, color);
-        num++;
-        i += 2;
-    }
+    // matamos la bandera de la tarea
+    matar_bandera(tarea);
+    // imprimimos numeros del reloj de la tarea y la bandera a matar
+    unsigned char color = C_BG_RED | C_FG_WHITE;
+    print_int((unsigned int) tarea, 4+(tarea-1)*3, 24, color);
+    print_int((unsigned int) tarea, 32+(tarea-1)*3, 24, color);
 
-    // imprimimos numeros de los relojes de banderas
-    num = 1;
-    for (int i = 32; i < 54; i++) {
-        unsigned char color;
-        if (tarea_activa(num) == 1)
-            color = C_BG_BROWN | C_FG_BLACK;
-        else
-            color = C_BG_RED | C_FG_WHITE;
-        print_int(num, i, 24, color);
-        num++;
-        i += 2;
-    }
-    // imprimimos todos los relojes
-    imprimir_relojes();
+    // imprimimos relojes
+    print_char(relojes_tareas[tarea-1], 5+(tarea-1)*3, 24, color);
+    print_char(relojes_banderas[tarea-1], 33+(tarea-1)*3, 24, color);
 }
 
 void matar_bandera(unsigned short tarea){
-    if (tarea == 0)
+    if (tarea == 1)
         for (int i = 0; i < BANDERA_FILS; i++) {
             for (int j = 0; j < BANDERA_COLS; j++) {
                 print(" ", 2 + j, 3 + i, C_BG_BLACK | C_FG_BLACK);
@@ -685,7 +670,7 @@ void matar_bandera(unsigned short tarea){
                     print(" ", 2 + j, 3 + i, C_BG_RED | C_FG_BLACK);
              }   
         }
-    else if (tarea == 1)
+    else if (tarea == 2)
         for (int i = 0; i < BANDERA_FILS; i++) {
             for (int j = 0; j < BANDERA_COLS; j++) {
                 print(" ", 14 + j, 3 + i, C_BG_BLACK | C_FG_BLACK);
@@ -701,7 +686,7 @@ void matar_bandera(unsigned short tarea){
                     print(" ", 14 + j, 3 + i, C_BG_RED | C_FG_BLACK);
              }   
         }
-    else if (tarea == 2)
+    else if (tarea == 3)
         for (int i = 0; i < BANDERA_FILS; i++) {
             for (int j = 0; j < BANDERA_COLS; j++) {
                 print(" ", 26 + j, 3 + i, C_BG_BLACK | C_FG_BLACK);
@@ -717,7 +702,7 @@ void matar_bandera(unsigned short tarea){
                    print(" ", 26 + j, 3 + i, C_BG_RED | C_FG_BLACK);
              }   
         }
-    else if (tarea == 3)
+    else if (tarea == 4)
         for (int i = 0; i < BANDERA_FILS; i++) {
             for (int j = 0; j < BANDERA_COLS; j++) {
                 print(" ", 38 + j, 3 + i, C_BG_BLACK | C_FG_BLACK);
@@ -733,7 +718,7 @@ void matar_bandera(unsigned short tarea){
                   print(" ", 38 + j, 3 + i, C_BG_RED | C_FG_BLACK);
              }   
         }
-    else if (tarea == 4)
+    else if (tarea == 5)
         for (int i = 0; i < BANDERA_FILS; i++) {
             for (int j = 0; j < BANDERA_COLS; j++) {
                 print(" ", 2 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
@@ -749,7 +734,7 @@ void matar_bandera(unsigned short tarea){
                     print(" ", 2 + j, 9 + i, C_BG_RED | C_FG_BLACK);
              }   
         }
-    else if (tarea == 5)
+    else if (tarea == 6)
         for (int i = 0; i < BANDERA_FILS; i++) {
             for (int j = 0; j < BANDERA_COLS; j++) {
                 print(" ", 14 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
@@ -765,7 +750,7 @@ void matar_bandera(unsigned short tarea){
                     print(" ", 14 + j, 9 + i, C_BG_RED | C_FG_BLACK);
              }   
         }
-    else if (tarea == 6)
+    else if (tarea == 7)
         for (int i = 0; i < BANDERA_FILS; i++) {
             for (int j = 0; j < BANDERA_COLS; j++) {
                 print(" ", 26 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
@@ -781,7 +766,7 @@ void matar_bandera(unsigned short tarea){
                     print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
              }   
         }
-    else if (tarea == 7)
+    else if (tarea == 8)
         for (int i = 0; i < BANDERA_FILS; i++) {
             for (int j = 0; j < BANDERA_COLS; j++) {
                 print(" ", 38 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);

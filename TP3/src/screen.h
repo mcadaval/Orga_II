@@ -38,7 +38,7 @@ void print_modo_estado();
 
 void print_modo_mapa();
 
-void flamear_bandera(unsigned char n);
+void flamear_bandera();
 
 void imprimir_bandera(unsigned char n);
 
