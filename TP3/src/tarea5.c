@@ -8,6 +8,8 @@
 #include "defines.h"
 #include "game.h"
 #include "syscall.h"
+#include "i386.h"
+
 
 #define BANDERA_BUFFER  0x40001000
 
@@ -45,6 +47,7 @@ void task()
 
 unsigned char *bandera()
 {
+    breakpoint();
     ca(*buffer)[10] = (ca(*)[10]) (BANDERA_BUFFER);
     int *b = (int *) (var_B);
     unsigned int fil;

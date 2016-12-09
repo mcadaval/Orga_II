@@ -6,6 +6,7 @@
 */
 
 #include "tss.h"
+#include "screen.h"
 
 tss tarea_inicial;
 tss tarea_idle;
@@ -14,8 +15,12 @@ tss tss_navios[CANT_TAREAS];
 tss tss_banderas[CANT_TAREAS];
 
 unsigned int calcular_eip_bandera(int tarea) {
-    unsigned int offset_eip = 0x11FFC + (tarea - 1) * 0x2000;
-    return offset_eip + 0x40000000;
+    unsigned int* offset_eip = (unsigned int*) (0x11FFC + (tarea - 1) * 0x2000);
+    print_hex((int) offset_eip, 8, 20, 20, C_BG_LIGHT_GREY | C_FG_BLACK);
+    unsigned int puntero_funcion_bandera = *offset_eip;
+    print_hex((int) puntero_funcion_bandera, 8, 35, 20, C_BG_LIGHT_GREY | C_FG_BLACK);
+    breakpoint();
+    return puntero_funcion_bandera + 0x40000000;
 }
 
 void tss_inicializar() {
@@ -266,7 +271,7 @@ void tss_inicializar() {
         tss_banderas[i-1].esp0 = (unsigned int) dame_pagina_libre_tierra() + 0x1000;
         tss_banderas[i-1].ss0 = GDT_IDX_KERNEL_DATA << 3;     
         tss_banderas[i-1].cr3 = cr3_tarea_i;
-        tss_banderas[i-1].eip = calcular_eip_bandera(i);     
+        tss_banderas[i-1].eip = calcular_eip_bandera(i);
         tss_banderas[i-1].eflags = 0x202;
         tss_banderas[i-1].esp = 0x40001FFC;     
         tss_banderas[i-1].ebp = 0x40001FFC;

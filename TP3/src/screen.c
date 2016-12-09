@@ -30,9 +30,11 @@ char relojes_tareas[CANT_TAREAS];
 char relojes_banderas[CANT_TAREAS];
 // en este arreglo guardamos para cada tarea las 3 paginas fisicas que esta ocupando
 unsigned int memoria_tareas[CANT_TAREAS][3];
+// en este arreglo guardamos toda la información necesaria para imprimir el mapa. Para cada tarea i indicamos en la posicion i un 1 que esa pagina esta mapeada para la tarea i. El noveno elemento indica si hay misil  
+unsigned paginas_mapa[VIDEO_FILS][VIDEO_COLS][9];
 
 // en este arreglo guardamos los mensajes de excepcion  
-const char* excepciones[22] = {
+const char* excepciones[23] = {
         "Divide Error            ",
         "Debug Exception         ",
         "NMI                     ",
@@ -54,7 +56,8 @@ const char* excepciones[22] = {
         "Machine Check           ",
         "SIMD Floating-Point     ",
         "Virtualization Exception",
-        "Func. bandera por tarea "
+        "Func. bandera por tarea ",
+        "Syscall 0x50 por bandera"
     };
 
 
@@ -175,6 +178,24 @@ void print_modo_estado() {
         }
     }
     
+    // imprimimos nombres de navios sobre cada bandera
+    for (int i = 0; i < 8; i++) {
+        unsigned int y;
+        unsigned int x1;
+        unsigned int x2;
+        if (i < 4) {
+            y = 2;
+            x1 = 5+i*12;
+            x2 = 11+i*12;
+        } else {
+            y = 8;
+            x1 = 5+(i-4)*12;
+            x2 = 11+(i-4)*12;
+        }
+        print("NAVIO", x1, y, C_BG_LIGHT_GREY | C_FG_BLACK);
+        print_int(i+1, x2, y, C_BG_LIGHT_GREY | C_FG_BLACK);
+    }
+
     const char* message[13] = {
         " EAX            CS",
         " EBX            DS",
@@ -405,32 +426,99 @@ void print_modo_estado() {
 }
 
 void print_modo_mapa() {    
-    // pintamos fondo verde en las primeras 3 filas (0 a 2)
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < VIDEO_FILS; i++) {
         for (int j = 0; j < VIDEO_COLS; j++) {
-            print(" ", j, i, C_BG_GREEN | C_FG_WHITE);
-        }
-    }
 
-    // pintamos fondo verde para las primeras 16 posiciones de la cuarta fila (3). Para el resto fondo azul 
-    for (int j = 0; j < VIDEO_COLS; j++) {
-        if (j < 16)
-            print(" ", j, 3, C_BG_GREEN | C_FG_WHITE);
-        else
-            print(" ", j, 3, C_BG_CYAN | C_FG_WHITE);
-    }
+            // imprimimos numeros de los relojes de tareas
+            if (i == 24) {
+                unsigned int num = 1;
+                for (int i = 4; i < 26; i++) {
+                    unsigned char color;
+                    if (tarea_activa(num) == 1)
+                        color = C_BG_LIGHT_GREY | C_FG_BLACK;
+                    else
+                        color = C_BG_RED | C_FG_WHITE;
+                    print_int(num, i, 24, color);
+                    num++;
+                    i += 2;
+                }
 
-    // pintamos fondo azul para las siguientes 20 filas (4 a 23)
-    for (int i = 4; i < 24; i++) {
-        for (int j = 0; j < VIDEO_COLS; j++) {
-            print(" ", j, i, C_BG_CYAN | C_FG_WHITE);
-        }
-    }
+                // imprimimos numeros de los relojes de banderas
+                num = 1;
+                for (int i = 32; i < 54; i++) {
+                    unsigned char color;
+                    if (tarea_activa(num) == 1)
+                        color = C_BG_BROWN | C_FG_BLACK;
+                    else
+                        color = C_BG_RED | C_FG_WHITE;
+                    print_int(num, i, 24, color);
+                    num++;
+                    i += 2;
+                }
 
-    // pintamos fondo negro en la última linea (24)
-    for (int j = 0; j < VIDEO_COLS; j++) {
-        print(" ", j, 24, C_BG_BLACK | C_FG_BLACK);
-    }
+                // imprimimos todos los relojes
+                imprimir_relojes();
+            }
+
+            // determinamos cual es el estado:
+            // Si es 0 hay que imprimir el color de fondo verde
+            // Si es 1 hay que imprimir el color de fondo celeste 
+            // Si es 2 hay que imprimir rojo con el numero de tarea
+            // Si es 3 hay mas de una pagina mapeada y hay que imprimir naranja
+            // Si es 4 hay ultimo misil y hay que imprimir amarillo
+            unsigned char estado;
+            if (i < 100)
+                estado = 0;
+            else
+                estado = 1;
+            unsigned char tarea;
+            unsigned char cantidad_tareas = 0;
+            for (int k = 0; k < 9; k++) {
+                if (k != 8) {
+                    if (paginas_mapa[i][j][k] == 1) {
+                        tarea = k+1;
+                        cantidad_tareas++;
+                        if (cantidad_tareas > 1)
+                            estado = 3;
+                        else
+                            estado = 2;
+                    }
+                } else {
+                    if (paginas_mapa[i][j][k] == 1)
+                        estado = 4;
+                }
+            }
+
+            unsigned char color;
+            char * msj; 
+            switch(estado) {
+                case  0:
+                    color = C_BG_GREEN | C_FG_WHITE;
+                    msj = " ";
+                    print(msj, j, i, color);
+                    break;
+                case  1:
+                    color = C_BG_CYAN | C_FG_WHITE;
+                    msj = " ";
+                    print(msj, j, i, color);
+                    break;
+                case  2:
+                    color = C_BG_RED | C_FG_WHITE;
+                    print_int(tarea, j, i, color);
+                    break;
+                case  3:
+                    color = C_BG_BROWN | C_FG_WHITE;
+                    msj = "X";
+                    print(msj, j, i, color);
+                    break;
+                case  4:
+                    color = C_BG_MAGENTA | C_FG_WHITE;
+                    msj = " ";
+                    print(msj, j, i, color);
+                    break;
+            }
+        }  
+    } 
 }
 
 // inicializa el arreglos banderas con todas las banderas 
@@ -544,8 +632,8 @@ void imprimir_registros_y_excepcion() {
         
     unsigned short tarea = dame_tarea_actual();
 
-    // si estamos en cualquier excepcion exepto la 21
-    if (excepciones_tareas[dame_tarea_actual()-1] != 21) {
+    // si estamos en cualquier excepcion exepto la 21 o 22
+    if (excepciones_tareas[dame_tarea_actual()-1] < 21) {
         // imprimimos primera columna de registros
         for (int i = 0; i < 13; i++) {
             print_hex(ultimo_estado[i], 8, 56, 2+i, C_BG_BLACK| C_FG_WHITE);
@@ -590,7 +678,7 @@ void imprimir_registros_y_excepcion() {
     }
 
     // imprimimos mensaje de excepcion en el cuadro y numero de navio que arrojo la excepcion
-    if (excepciones_tareas[dame_tarea_actual()-1] != 21) {
+    if (excepciones_tareas[dame_tarea_actual()-1] < 21) {
         print(excepciones[ultima_excepcion], 50, 1, C_BG_CYAN | C_FG_BLACK);
         print_int(ultima_excepcion_tarea, 77, 1, C_BG_CYAN | C_FG_BLACK);
     }
@@ -607,6 +695,11 @@ void excepcion_bandera() {
     imprimir_registros_y_excepcion();
 }
 
+void excepcion_tarea() {
+    excepciones_tareas[dame_tarea_actual()-1] = 22;
+    imprimir_registros_y_excepcion();
+}
+
 void imprimir_excepciones_por_tarea() {
     for (int i = 0; i < CANT_TAREAS; i++) {
         if (excepciones_tareas[i] != -1) {
@@ -617,6 +710,9 @@ void imprimir_excepciones_por_tarea() {
 
 void registar_memoria_tarea(unsigned int tarea, unsigned char numero_pag, unsigned int fisica) {
     memoria_tareas[tarea-1][numero_pag-1] = fisica;
+    // unsigned char (*buffer)[10] = (ca(*)[10]) BANDERA_BUFFER;
+    // unsigned char *paginas_mapa_arreglo = (unsigned char *) &paginas_mapa;
+    // paginas_mapa_arreglo[fisica >> 3][tarea-1] = 1; 
 }
 
 // imprime todos los relojes
@@ -845,11 +941,4 @@ void imprimir_paginas() {
             print("0x", 34, 15+i, color);
             print_hex(memoria_tareas[i-1][2], 8, 36, 15+i, color);
     }
-}
-
-  
-
-
-
- 
-   
+}   

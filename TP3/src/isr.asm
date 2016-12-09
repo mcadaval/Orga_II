@@ -24,6 +24,7 @@ extern matar_bandera
 extern guardar_estado_registros
 extern excepcion_bandera
 extern imprimir_paginas
+extern excepcion_tarea
 
 ;; GAME
 extern game_service
@@ -51,7 +52,7 @@ _isr%1:
 .loopear:
     call matar_tarea             ;mata la tarea
     push %1
-    xchg bx, bx
+    ; xchg bx, bx
     push gs 
     push fs
     push es
@@ -75,7 +76,7 @@ _isr%1:
     call guardar_estado_registros
 
     call matar_en_screen
-    xchg bx, bx
+    ; xchg bx, bx
     jmp 0x88:0                   ;cambia a tarea idle
     jmp $
 %endmacro
@@ -163,7 +164,7 @@ push eax
 call rutina_teclado
 add esp, 4
 popad                      ;popea todos los registros
-xchg bx, bx
+; xchg bx, bx
 iret
 
 ;;
@@ -173,6 +174,16 @@ global _isr80
 
 _isr80:
 pushad
+xchg bx, bx
+str ax
+shr ax, 3                  ;verifica si es tarea o bandera
+cmp ax, 9
+xchg bx, bx
+jl .es_tarea
+call matar_tarea
+call excepcion_tarea
+call matar_en_screen
+.es_tarea:
 xchg bx, bx
 mov edi, cr3
 push edi                   ;pushea parametros a la pila

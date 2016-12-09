@@ -50,6 +50,8 @@ void imprimir_registros_y_excepcion();
 
 void excepcion_bandera();
 
+void excepcion_tarea();
+
 void registar_memoria_tarea(unsigned int tarea, unsigned char numero_pag, unsigned int fisica);
 
 void imprimir_excepciones_por_tarea();
