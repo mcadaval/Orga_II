@@ -22,6 +22,8 @@ int ultimo_estado[20];
 int excepciones_tareas[CANT_TAREAS]; 
 // en esta variable guardamos el numero de la ultima excepcion arrojada (-1 si aun no se arrojo ninguna) 
 int ultima_excepcion;
+// en esta variable guardamos el numero de la tarea que arrojo la ultima excepcion (-1 si aun no se arrojo ninguna) 
+int ultima_excepcion_tarea;
 // en este arreglo guardamos el estado del reloj de cada tarea
 char relojes_tareas[CANT_TAREAS];
 // en este arreglo guardamos el estado del reloj de cada bandera
@@ -30,7 +32,7 @@ char relojes_banderas[CANT_TAREAS];
 unsigned int memoria_tareas[CANT_TAREAS][3];
 
 // en este arreglo guardamos los mensajes de excepcion  
-const char* excepciones[21] = {
+const char* excepciones[22] = {
         "Divide Error            ",
         "Debug Exception         ",
         "NMI                     ",
@@ -51,7 +53,8 @@ const char* excepciones[21] = {
         "Alignment Check         ",
         "Machine Check           ",
         "SIMD Floating-Point     ",
-        "Virtualization Exception"
+        "Virtualization Exception",
+        "Func. bandera por tarea "
     };
 
 
@@ -193,6 +196,9 @@ void print_modo_estado() {
         print(message[i-2], 51, i, C_BG_BLACK | C_FG_WHITE);
     }
 
+    // pitamos la palabra "NAV" arriba del cuadro de ultima excepcion
+    print("NAV", 74, 1, C_BG_CYAN | C_FG_BLACK);
+
     // pintamos contenidos de registros en el cuadro de la derecha y excepciones si es que hay
     if (ultima_excepcion != -1) {
         imprimir_registros_y_excepcion();
@@ -229,20 +235,15 @@ void print_modo_estado() {
                     print("P3:", j, i, color);
                     j += 2;
                     break;
-                // case 50:
-                //     if (excepciones_tareas[i-16] == -1) {
-                //        print("                             ", j, i, color);
-                //     } else {
-                //         print(excepciones[excepciones_tareas[i-16]], j, i, color);
-                //     }
-                //     j += 27;
-                //     break;
                 default:
                     print(" ", j, i, color);
                     break;
             }
         }
     }
+
+    // imprimimos paginas fisicas de cada tarea
+    imprimir_paginas();
 
     // imprime la ultima excepcion para cada tarea
     imprimir_excepciones_por_tarea();
@@ -503,10 +504,8 @@ void inicializar_pantalla() {
     modo_pantalla = 0;
     inicializar_banderas();
     ultima_excepcion = -1;
+    ultima_excepcion_tarea = -1;
     for (int i = 0; i < CANT_TAREAS; i++) {
-        memoria_tareas[i][0] = 0x0;
-        memoria_tareas[i][1] = 0x0;
-        memoria_tareas[i][2] = 0x0;
         excepciones_tareas[i] = -1;
         relojes_banderas[i] = '|';
         relojes_tareas[i] = '|';
@@ -516,6 +515,8 @@ void inicializar_pantalla() {
 
 void guardar_estado_registros(unsigned int cr0, unsigned int cr2, unsigned int cr3, unsigned int cr4, unsigned int eax, unsigned int ebx, unsigned int ecx, unsigned int edx, unsigned int esi, unsigned int edi, unsigned int ebp, unsigned int ds, unsigned int es, unsigned int fs, unsigned int gs, unsigned int excepcion, unsigned int errCode, unsigned int eip, unsigned int cs, unsigned int eflags, unsigned int esp, unsigned int ss) {
     ultima_excepcion = excepcion;
+    excepciones_tareas[dame_tarea_actual()-1] = excepcion;
+    ultima_excepcion_tarea = dame_tarea_actual();
     ultimo_estado[0] = eax;
     ultimo_estado[1] = ebx;
     ultimo_estado[2] = ecx;
@@ -543,28 +544,73 @@ void imprimir_registros_y_excepcion() {
         
     unsigned short tarea = dame_tarea_actual();
 
-    // imprimimos primera columna de registros
-    for (int i = 0; i < 13; i++) {
-        print_hex(ultimo_estado[i], 8, 55, 3+i, C_BG_BLACK| C_FG_WHITE);
+    // si estamos en cualquier excepcion exepto la 21
+    if (excepciones_tareas[dame_tarea_actual()-1] != 21) {
+        // imprimimos primera columna de registros
+        for (int i = 0; i < 13; i++) {
+            print_hex(ultimo_estado[i], 8, 56, 2+i, C_BG_BLACK| C_FG_WHITE);
+        }
+
+        // imprimimos segunda columna de registros
+        for (int i = 13; i < 18; i++) {
+            print_hex(ultimo_estado[i], 8, 70, 2+(i-13), C_BG_BLACK| C_FG_WHITE);
+        }
+
+        // imprimimos eflags
+        print_hex(ultimo_estado[19], 8, 69, 10, C_BG_BLACK| C_FG_WHITE);        
     }
 
-    // imprimimos segunda columna de registros
-    for (int i = 13; i < 18; i++) {
-        print_hex(ultimo_estado[i], 8, 69, 3+(i-13), C_BG_BLACK| C_FG_WHITE);
+    // pintamos la linea correspondiente a la tarea de rojo
+    unsigned char color = C_BG_RED | C_FG_WHITE;  
+    for (int j = 0; j < VIDEO_COLS; j++) {
+        switch(j) {
+            case 0:
+            case VIDEO_COLS - 1:
+                print(" ", j, 15+tarea, C_BG_BLACK | C_FG_WHITE);
+                break;
+            case 1:
+                print_int(tarea, j, 15+tarea, color);
+                break;
+            case 3:
+                print("P1:", j, 15+tarea, color);
+                j += 2;
+                break;
+            case 17:
+                print("P2:", j, 15+tarea, color);
+                j += 2;
+                break;
+            case 31: 
+                print("P3:", j, 15+tarea, color);
+                j += 2;
+                break;
+            default:
+                print(" ", j, 15+tarea, color);
+                break;
+        }
     }
 
-    // imprimimos eflags
-    print_hex(ultimo_estado[19], 8, 69, 10, C_BG_BLACK| C_FG_WHITE);
+    // imprimimos mensaje de excepcion en el cuadro y numero de navio que arrojo la excepcion
+    if (excepciones_tareas[dame_tarea_actual()-1] != 21) {
+        print(excepciones[ultima_excepcion], 50, 1, C_BG_CYAN | C_FG_BLACK);
+        print_int(ultima_excepcion_tarea, 77, 1, C_BG_CYAN | C_FG_BLACK);
+    }
+    
+    // imprimimos mensaje de excepcion en la fila correspondiente a la tarea
+    print(excepciones[excepciones_tareas[dame_tarea_actual()-1]], 51, 15+tarea, C_BG_RED | C_FG_WHITE);
 
-    // imprimimos mensaje de excepcion en el cuadro, y en la fila que corresponda
-    print(excepciones[ultima_excepcion], 1, 50, C_BG_CYAN | C_FG_BLACK);
-    print(excepciones[ultima_excepcion], 15+tarea, 51, C_BG_RED | C_FG_WHITE);
+    // imprimimos paginas de memoria porque las pisamos antes
+    imprimir_paginas();
+}
+
+void excepcion_bandera() {
+    excepciones_tareas[dame_tarea_actual()-1] = 21;
+    imprimir_registros_y_excepcion();
 }
 
 void imprimir_excepciones_por_tarea() {
     for (int i = 0; i < CANT_TAREAS; i++) {
         if (excepciones_tareas[i] != -1) {
-            print(excepciones[excepciones_tareas[i]], 16+i, 51, C_BG_RED | C_FG_WHITE);
+            print(excepciones[excepciones_tareas[i]], 51, 16+i, C_BG_RED | C_FG_WHITE);
         }
     }
 }
@@ -643,6 +689,7 @@ void matar_en_screen() {
 
     // matamos la bandera de la tarea
     matar_bandera(tarea);
+    
     // imprimimos numeros del reloj de la tarea y la bandera a matar
     unsigned char color = C_BG_RED | C_FG_WHITE;
     print_int((unsigned int) tarea, 4+(tarea-1)*3, 24, color);
@@ -782,6 +829,22 @@ void matar_bandera(unsigned short tarea){
                     print(" ", 38 + j, 9 + i, C_BG_RED | C_FG_BLACK);
              }   
         }       
+}
+
+void imprimir_paginas() {
+    for (int i = 1; i <= CANT_TAREAS; i++) {
+        unsigned char color;
+        if (tarea_activa(i) == 1)
+            color = C_BG_CYAN | C_FG_BLACK;
+        else
+            color = C_BG_RED | C_FG_WHITE;
+            print("0x", 6, 15+i, color);
+            print_hex(memoria_tareas[i-1][0], 8, 8, 15+i, color);
+            print("0x", 20, 15+i, color);
+            print_hex(memoria_tareas[i-1][1], 8, 22, 15+i, color);
+            print("0x", 34, 15+i, color);
+            print_hex(memoria_tareas[i-1][2], 8, 36, 15+i, color);
+    }
 }
 
   

@@ -21,6 +21,9 @@ extern actualizar_reloj_actual
 extern print_modo_estado
 extern matar_en_screen
 extern matar_bandera
+extern guardar_estado_registros
+extern excepcion_bandera
+extern imprimir_paginas
 
 ;; GAME
 extern game_service
@@ -46,34 +49,32 @@ global _isr%1
 
 _isr%1:
 .loopear:
+    call matar_tarea             ;mata la tarea
     push %1
     xchg bx, bx
-    ; push gs 
-    ; push fs
-    ; push es
-    ; push ds
-    ; push ebp
-    ; push edi
-    ; push esi
-    ; push edx
-    ; push ecx
-    ; push ebx
-    ; push eax
+    push gs 
+    push fs
+    push es
+    push ds
+    push ebp
+    push edi
+    push esi
+    push edx
+    push ecx
+    push ebx
+    push eax
 
-    ; mov eax, cr4 
-    ; push eax
-    ; push eax, cr3
-    ; push eax
-    ; push eax, cr2
-    ; push eax
-    ; push eax, cr0
-    ; push eax 
-    ; call guardar_estado_registros
+    mov eax, cr4 
+    push eax
+    mov eax, cr3
+    push eax
+    mov eax, cr2
+    push eax
+    mov eax, cr0
+    push eax 
+    call guardar_estado_registros
 
-    ; call print_exception_message ;imprime mensaje de excepcion
-    call matar_tarea             ;mata la tarea
     call matar_en_screen
-    ; call print_modo_estado
     xchg bx, bx
     jmp 0x88:0                   ;cambia a tarea idle
     jmp $
@@ -179,6 +180,7 @@ push ecx
 push ebx
 push eax
 call game_service          ;llama a game_service
+call imprimir_paginas      ;imprime paginas nuevas mapeadas 
 call actualizar_flag_idle  ;actualiza el flag que indica que la tarea idle esta corriendo
 xchg bx, bx
 jmp 0x88:0                 ;cambia a tarea idle 
@@ -196,13 +198,14 @@ shr ax, 3
 cmp ax, 9
 jge .es_bandera
 call matar_tarea
+call excepcion_bandera
 call matar_en_screen
 
 .es_bandera:
 ; xor eax, eax
 ; call dame_tarea_actual
 ; push eax
-call flamear_bandera
+; call flamear_bandera
 call actualizar_flag_idle  ;actualiza el flag que indica que la tarea idle esta corriendo
 xchg bx, bx
 jmp 0x88:0                 ;cambia a tarea idle

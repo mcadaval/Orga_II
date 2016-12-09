@@ -48,6 +48,8 @@ void guardar_estado_registros(unsigned int cr0, unsigned int cr2, unsigned int c
 
 void imprimir_registros_y_excepcion();
 
+void excepcion_bandera();
+
 void registar_memoria_tarea(unsigned int tarea, unsigned char numero_pag, unsigned int fisica);
 
 void imprimir_excepciones_por_tarea();
@@ -59,6 +61,8 @@ char siguiente_reloj(char reloj);
 void matar_en_screen();
 
 void matar_bandera(unsigned short tarea);
+
+void imprimir_paginas();
 
 
 

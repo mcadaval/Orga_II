@@ -5,9 +5,12 @@
 */
 
 #include "game.h"
+#include "screen.h"
+#include "sched.h"
 
 void game_fondear(unsigned int ancla_dir_fisica, unsigned int cr3) {
-    mmu_mapear_pagina(0x40002000, cr3, ancla_dir_fisica, 1, 1);
+    mmu_mapear_pagina(0x40002000, cr3, ancla_dir_fisica, 1, 0);
+    registar_memoria_tarea(dame_tarea_actual(), 3, ancla_dir_fisica);
 }
 
 void game_canonear(unsigned int dir_misil_fisica, unsigned int dir_buffer_absoluta) {
@@ -20,7 +23,9 @@ void game_canonear(unsigned int dir_misil_fisica, unsigned int dir_buffer_absolu
 
 void game_navegar(unsigned int dir_primera_pag_fisica, unsigned int dir_segunda_pag_fisica, unsigned int cr3) {
     mmu_mapear_pagina(0x40000000, cr3, dir_primera_pag_fisica, 1, 1);
+    registar_memoria_tarea(dame_tarea_actual(), 1, dir_primera_pag_fisica);
     mmu_mapear_pagina(0x40001000, cr3, dir_segunda_pag_fisica, 1, 1);
+    registar_memoria_tarea(dame_tarea_actual(), 2, dir_segunda_pag_fisica);
 }
 
 void game_service(unsigned int codigo_servico, unsigned int dir_fisica1, unsigned int dir_fisica2, unsigned int cr3) {

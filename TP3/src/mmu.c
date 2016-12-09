@@ -295,7 +295,7 @@ unsigned int mmu_inicializar_dir_tarea(unsigned int tarea, unsigned int fisica) 
     registar_memoria_tarea(tarea, 2, fisica + 0x1000);
     
     // mapeamos pagina ancla (nivel 3) y guardamos direccion fisica en estructura para poder imprimir en pantalla
-    mmu_mapear_pagina(0x40002000, directorio_paginas, 0x0, 1, 1);
+    mmu_mapear_pagina(0x40002000, directorio_paginas, 0x0, 1, 0);
     registar_memoria_tarea(tarea, 3, 0x0);
     
     unsigned int direccion_codigo_tarea = (tarea - 1) * 0x2000 + 0x10000;
