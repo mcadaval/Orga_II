@@ -37,6 +37,8 @@ unsigned char *bandera();
 
 void task()
 {
+    // breakpoint();
+    
     /* Tarea 8 */
     //NOSE, navega muchas paginas y en una de esas rompe todo
     int i;
@@ -53,7 +55,7 @@ void task()
 
 unsigned char *bandera()
 {
-    breakpoint();
+    // breakpoint();
     ca(*buffer)[10] = (ca(*)[10]) (BANDERA_BUFFER);
     int *b = (int *) (var_B);
     unsigned int fil;

@@ -37,6 +37,8 @@ unsigned char *bandera();
 
 void task()
 {
+    // breakpoint();
+    
     /* Tarea 7 */
     // MUERE, division por cero
     int a, b, c;
@@ -51,7 +53,7 @@ void task()
 
 unsigned char *bandera()
 {
-    breakpoint();
+    // breakpoint();
     ca(*buffer)[10] = (ca(*)[10]) (BANDERA_BUFFER);
     int *b = (int *) (var_B);
     unsigned int fil;

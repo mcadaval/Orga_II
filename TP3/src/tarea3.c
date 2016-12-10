@@ -37,6 +37,8 @@ unsigned char *bandera();
 
 void task()
 {
+    // breakpoint();
+    
     /* Tarea 3 */
     int i;
     unsigned char buffer[97];
@@ -59,7 +61,7 @@ void task()
 
 unsigned char *bandera()
 {
-    breakpoint();
+    // breakpoint();
     ca(*buffer)[10] = (ca(*)[10]) (BANDERA_BUFFER);
     int *b = (int *) (var_B);
     unsigned int fil;

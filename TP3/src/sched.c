@@ -20,7 +20,7 @@ unsigned short ultima_tarea;
 // indica la cantidad de tareas/banderas vivas
 unsigned short num_tareas_vivas;
 // indica si se esta ejecutando la tarea idle (1) o no (0)
-unsigned char tarea_idle;
+unsigned char tarea_idle_flag;
 // indica la cantidad de banderas que se tienen que ejecutar en una vuelta 
 unsigned char cantidad_banderas;
 
@@ -33,10 +33,14 @@ void sched_inicializar() {
     ultima_tarea = 0;
     num_tareas_vivas = 8;
     cantidad_banderas = 8;
-    tarea_idle = 1;
+    tarea_idle_flag = 1;
 }
 
 unsigned short sched_proximo_indice() {
+    // si estamos corriendo idle entonces estamos por pasar a otra tarea / bandera
+    if (tarea_idle_flag == 1)
+        tarea_idle_flag = 0;
+
     // si el reloj interrumpio a la tarea inicial entonces pasamos a la tarea 1 (posicion 1 de la GDT)
     if (tarea_actual == 0) {
         tarea_actual = 1;
@@ -44,11 +48,7 @@ unsigned short sched_proximo_indice() {
         contador_tareas++;
         return 1;
     }
-
-    // si estamos corriendo idle entonces estamos por pasar a otra tarea / bandera
-    if (tarea_idle == 1)
-        tarea_idle = 0;
-
+    
     // si estamos ejecutando tarea
     if (tarea == 1) {
         // si ya ejecutamos 3 tareas cambiamos a banderas (posiciones de la GDT entre 9 y 16)
@@ -85,7 +85,7 @@ unsigned short sched_proximo_indice() {
 
 // deuelve el id de la tarea actual
 unsigned short dame_tarea_actual() {
-    if (tarea_idle == 1)
+    if (tarea_idle_flag == 1)
         return 17;
     return tarea_actual;
 }
@@ -115,7 +115,7 @@ void matar_tarea() {
 }
 
 void actualizar_flag_idle() {
-    tarea_idle = 1;
+    tarea_idle_flag = 1;
 }
 
 unsigned char tarea_activa(unsigned int tarea) {
@@ -128,5 +128,5 @@ unsigned char es_tarea() {
 }
 
 unsigned char actual_es_idle() {
-    return tarea_idle;
+    return tarea_idle_flag;
 }

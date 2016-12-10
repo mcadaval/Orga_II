@@ -37,6 +37,8 @@ unsigned char *bandera();
 
 void task()
 {
+    // breakpoint();
+    
     /* Tarea 5 */
     // MUERE, una tarea NO puede llamar a la int 66
 
@@ -47,7 +49,7 @@ void task()
 
 unsigned char *bandera()
 {
-    breakpoint();
+    // breakpoint();
     ca(*buffer)[10] = (ca(*)[10]) (BANDERA_BUFFER);
     int *b = (int *) (var_B);
     unsigned int fil;

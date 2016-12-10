@@ -60,5 +60,7 @@ extern tss tss_navios[CANT_TAREAS];
 extern tss tss_banderas[CANT_TAREAS];
 
 void tss_inicializar();
+void resetear_bandera_tss();
+
 
 #endif  /* !__TSS_H__ */

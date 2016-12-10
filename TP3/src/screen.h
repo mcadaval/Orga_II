@@ -32,8 +32,6 @@ void print_int(unsigned int n, unsigned int x, unsigned int y, unsigned short at
 
 void screen_pintar_pantalla();
 
-void print_exception_message(unsigned int e);
-
 void print_modo_estado();
 
 void print_modo_mapa();
@@ -52,7 +50,9 @@ void excepcion_bandera();
 
 void excepcion_tarea();
 
-void registar_memoria_tarea(unsigned int tarea, unsigned char numero_pag, unsigned int fisica);
+void registar_memoria_tarea(unsigned short tarea, unsigned char numero_pag, unsigned int fisica);
+
+void desregistrar_memoria_tarea(unsigned short tarea, unsigned char numero_pag);
 
 void imprimir_excepciones_por_tarea();
 

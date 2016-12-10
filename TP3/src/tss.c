@@ -7,6 +7,9 @@
 
 #include "tss.h"
 #include "screen.h"
+#include "sched.h"
+#include "i386.h"
+
 
 tss tarea_inicial;
 tss tarea_idle;
@@ -16,11 +19,25 @@ tss tss_banderas[CANT_TAREAS];
 
 unsigned int calcular_eip_bandera(int tarea) {
     unsigned int* offset_eip = (unsigned int*) (0x11FFC + (tarea - 1) * 0x2000);
-    print_hex((int) offset_eip, 8, 20, 20, C_BG_LIGHT_GREY | C_FG_BLACK);
+    // print_hex((int) offset_eip, 8, 20, 20, C_BG_LIGHT_GREY | C_FG_BLACK);
     unsigned int puntero_funcion_bandera = *offset_eip;
-    print_hex((int) puntero_funcion_bandera, 8, 35, 20, C_BG_LIGHT_GREY | C_FG_BLACK);
-    breakpoint();
-    return puntero_funcion_bandera + 0x40000000;
+    // print_hex((int) puntero_funcion_bandera, 8, 35, 20, C_BG_LIGHT_GREY | C_FG_BLACK);
+    unsigned int res = puntero_funcion_bandera + 0x40000000;
+    // print_hex((int) res, 8, 35, 23, C_BG_LIGHT_GREY | C_FG_BLACK);
+    // breakpoint();
+    return res;
+}
+
+void resetear_bandera_tss() {
+    // solo reseteamos si venimos de ejecutar la bandera
+    if (es_tarea() == 0) {
+        unsigned short tarea = dame_tarea_no_idle();
+        tss_banderas[tarea-1].ss0 = GDT_IDX_KERNEL_DATA << 3;     
+        tss_banderas[tarea-1].eflags = 0x202;
+        tss_banderas[tarea-1].eip = calcular_eip_bandera(tarea);
+        tss_banderas[tarea-1].esp = 0x40001FFC;     
+        tss_banderas[tarea-1].ebp = 0x40001FFC;
+    }
 }
 
 void tss_inicializar() {
@@ -184,7 +201,8 @@ void tss_inicializar() {
     for (int i = 1; i <= CANT_TAREAS; i++) {
         // inicializamos tarea i y obtenemos cr3 de la misma 
         unsigned int cr3_tarea_i = mmu_inicializar_dir_tarea(i, (unsigned int) dame_pagina_libre_mar());
-
+        // llamamos a la funcion simplemente porque en mmu_inicializar_dir_tarea utilizamos 2 paginas y solo le damos 1
+        dame_pagina_libre_mar();
         // inicializamos tss de tarea i
         tss_navios[i-1].esp0 = (unsigned int) dame_pagina_libre_tierra() + 0x1000;
         tss_navios[i-1].ss0 = GDT_IDX_KERNEL_DATA << 3;     
@@ -198,6 +216,7 @@ void tss_inicializar() {
         tss_navios[i-1].fs = (GDT_IDX_USER_DATA << 3) | 3;
         tss_navios[i-1].ss = (GDT_IDX_USER_DATA << 3) | 3;
         tss_navios[i-1].ds = (GDT_IDX_USER_DATA << 3) | 3;
+        tss_navios[i-1].gs = (GDT_IDX_USER_DATA << 3) | 3;
         // tss_navios[i-1].dtrap = 0x0;
         tss_navios[i-1].iomap = 0xFFFF;
 
@@ -275,13 +294,14 @@ void tss_inicializar() {
         tss_banderas[i-1].eflags = 0x202;
         tss_banderas[i-1].esp = 0x40001FFC;     
         tss_banderas[i-1].ebp = 0x40001FFC;
-        tss_banderas[i-1].es = (GDT_IDX_USER_DATA << 3) | 3;
+        // tss_banderas[i-1].es = (GDT_IDX_USER_DATA << 3) | 3;
         tss_banderas[i-1].cs = (GDT_IDX_USER_CODE << 3) | 3;                   
-        tss_banderas[i-1].fs = (GDT_IDX_USER_DATA << 3) | 3;
+        // tss_banderas[i-1].fs = (GDT_IDX_USER_DATA << 3) | 3;
         tss_banderas[i-1].ss = (GDT_IDX_USER_DATA << 3) | 3;
         tss_banderas[i-1].ds = (GDT_IDX_USER_DATA << 3) | 3;
+        // tss_banderas[i-1].gs = (GDT_IDX_USER_DATA << 3) | 3;
         // tss_banderas[i-1].dtrap = 0x0;
-        tss_banderas[i-1].iomap = 0xFFFF;
+        // tss_banderas[i-1].iomap = 0xFFFF;
 
         // inicializamos entrada en la gdt de la tss de bandera i
         // gdt[i+8] = (gdt_entry) {

@@ -36,6 +36,8 @@ unsigned char *bandera();
 
 void task()
 {
+    // breakpoint();
+    
     /* Tarea 6 */
     // MUERE, no hace nada, pero su bandera llama a un servicio del sistema
 
@@ -46,7 +48,7 @@ void task()
 
 unsigned char *bandera()
 {
-    breakpoint();
+    // breakpoint();
     ca(*buffer)[10] = (ca(*)[10]) (BANDERA_BUFFER);
     int *b = (int *) (var_B);
     unsigned int fil;

@@ -15,7 +15,6 @@ extern rutina_teclado
 extern fin_intr_pic1
 
 ;; SCREEN
-extern print_exception_message
 extern flamear_bandera
 extern actualizar_reloj_actual
 extern print_modo_estado
@@ -35,9 +34,12 @@ extern dame_tarea_actual
 extern matar_tarea
 extern actualizar_flag_idle
 
+;;TSS
+extern resetear_bandera_tss
+
 extern contador_tareas
 extern tarea
-extern tarea_idle
+extern tarea_idle_flag
 extern num_tareas_vivas;
 
 
@@ -122,17 +124,19 @@ ISR 20
 global _isr32
 
 _isr32:
-xchg bx, bx
+; xchg bx, bx
 pushad                       ;pushea todos los registros
 call fin_intr_pic1           ;llama al pic para avisarle que atendio una interrupcion
+call resetear_bandera_tss    ;si venimos de ejecutar una bandera reseteamos el eip de la tss de la misma
 call actualizar_reloj_actual ;actualiza el reloj de la tarea actual
+; xchg bx, bx
 call dame_tarea_actual
 mov bx, ax                   ;guarda en bx el id de la tarea actual
 call proximo_reloj           ;llama al proximo reloj
 call sched_proximo_indice    ;obtiene el proximo indice
 
 xor edx, edx
-mov dl, [tarea_idle]        ;edx
+mov dl, [tarea_idle_flag]        ;edx
 xor ecx, ecx
 mov cl, [tarea]             ;ecx
 xor esi, esi
@@ -144,7 +148,7 @@ cmp ax, bx                   ;verifica si el proximo indice es igual al indice q
 je .end                      ;si es igual, entonces no hay cambio de contexto
     shl ax, 3
     mov [selector], ax
-    xchg bx, bx
+    ; xchg bx, bx
     jmp far [offset]
 
 .end:
@@ -174,26 +178,28 @@ global _isr80
 
 _isr80:
 pushad
-xchg bx, bx
+; xchg bx, bx
+mov esi, eax              ;guarda los parametros de entrada de la syscall en registros que se preservan
+mov edi, ecx 
 str ax
 shr ax, 3                  ;verifica si es tarea o bandera
 cmp ax, 9
-xchg bx, bx
+; xchg bx, bx
 jl .es_tarea
 call matar_tarea
 call excepcion_tarea
 call matar_en_screen
 .es_tarea:
-xchg bx, bx
-mov edi, cr3
-push edi                   ;pushea parametros a la pila
-push ecx                   
+; xchg bx, bx
+mov eax, cr3
+push eax                   ;pushea parametros a la pila
+push edi                   
 push ebx
-push eax
+push esi
 call game_service          ;llama a game_service
 call imprimir_paginas      ;imprime paginas nuevas mapeadas 
 call actualizar_flag_idle  ;actualiza el flag que indica que la tarea idle esta corriendo
-xchg bx, bx
+; xchg bx, bx
 jmp 0x88:0                 ;cambia a tarea idle 
 add esp, 16 
 popad                      ;popea todos los registros
@@ -202,7 +208,7 @@ iret
 global _isr102
 
 _isr102:
-xchg bx, bx
+; xchg bx, bx
 pushad
 str ax
 shr ax, 3
@@ -211,14 +217,16 @@ jge .es_bandera
 call matar_tarea
 call excepcion_bandera
 call matar_en_screen
+jmp .saltar
 
 .es_bandera:
 ; xor eax, eax
 ; call dame_tarea_actual
 ; push eax
-; call flamear_bandera
+call flamear_bandera
+.saltar:
 call actualizar_flag_idle  ;actualiza el flag que indica que la tarea idle esta corriendo
-xchg bx, bx
+; xchg bx, bx
 jmp 0x88:0                 ;cambia a tarea idle
 popad
 iret

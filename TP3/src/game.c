@@ -9,7 +9,16 @@
 #include "sched.h"
 
 void game_fondear(unsigned int ancla_dir_fisica, unsigned int cr3) {
-    mmu_mapear_pagina(0x40002000, cr3, ancla_dir_fisica, 1, 0);
+    // unsigned char* ancla_fuente = (unsigned char*) 0x40002000;
+    // unsigned char* ancla_destino = (unsigned char*) ancla_dir_fisica;
+    // for (int i = 0; i < 4096; i++){
+    //     ancla_destino[i] = ancla_fuente[i];
+    // }
+    // breakpoint();
+    mmu_mapear_pagina(0x40002000, cr3, ancla_dir_fisica, 0, 0);
+    // breakpoint();
+    // desregistrar_memoria_tarea(dame_tarea_actual(), 3);
+    // breakpoint();
     registar_memoria_tarea(dame_tarea_actual(), 3, ancla_dir_fisica);
 }
 
@@ -22,9 +31,21 @@ void game_canonear(unsigned int dir_misil_fisica, unsigned int dir_buffer_absolu
 }
 
 void game_navegar(unsigned int dir_primera_pag_fisica, unsigned int dir_segunda_pag_fisica, unsigned int cr3) {
+    
+    unsigned char* codigoPag1 = (unsigned char*) 0x40000000;
+    unsigned char* destinoPag1 = (unsigned char*) dir_primera_pag_fisica;
+    unsigned char* codigoPag2 = (unsigned char*) 0x40001000;
+    unsigned char* destinoPag2 = (unsigned char*) dir_segunda_pag_fisica;
+    for (int i = 0; i < 4096; i++){
+        destinoPag1[i] = codigoPag1[i];
+        destinoPag2[i] = codigoPag2[i];
+    }
+
     mmu_mapear_pagina(0x40000000, cr3, dir_primera_pag_fisica, 1, 1);
+    // desregistrar_memoria_tarea(dame_tarea_actual(), 1);
     registar_memoria_tarea(dame_tarea_actual(), 1, dir_primera_pag_fisica);
     mmu_mapear_pagina(0x40001000, cr3, dir_segunda_pag_fisica, 1, 1);
+    // desregistrar_memoria_tarea(dame_tarea_actual(), 2);
     registar_memoria_tarea(dame_tarea_actual(), 2, dir_segunda_pag_fisica);
 }
 
