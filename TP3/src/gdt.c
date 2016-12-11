@@ -50,7 +50,6 @@ boundaries.
 
 */
 
-
 #include "gdt.h"
 
 gdt_entry gdt[GDT_COUNT] = {

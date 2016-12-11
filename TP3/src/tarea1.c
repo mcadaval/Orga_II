@@ -10,9 +10,6 @@
 #include "syscall.h"
 #include "i386.h"
 
-
-#define BANDERA_BUFFER  0x40001000
-
 /*
  * Estructura de la tarea :
  *
@@ -37,7 +34,6 @@ unsigned char *bandera();
 
 void task()
 {
-    // breakpoint();
     /* Tarea 1 */
     unsigned int i = 0;
 
@@ -50,7 +46,6 @@ void task()
 
 unsigned char *bandera()
 {
-    // breakpoint();
     ca(*buffer)[10] = (ca(*)[10]) (BANDERA_BUFFER);
     int *b = (int *) (var_B);
     unsigned int fil;

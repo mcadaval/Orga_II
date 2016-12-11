@@ -5,8 +5,10 @@
  funciones auxiliares para rutinas de atencion de interrupciones
 */
 
- #include "israux.h"
+#include "colors.h"
+#include "screen.h"
 
+// rutina de atencion de interrupcion de teclado. Dependiendo el scan code realiza determinada accion
 void rutina_teclado(unsigned char scan_code) {
     if (scan_code == 0x32)
         print_modo_mapa();

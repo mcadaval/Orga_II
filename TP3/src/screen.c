@@ -8,8 +8,8 @@
 #include "screen.h"
 #include "i386.h"  //Para magic breakpoint
 #include "sched.h"
-
-#define BANDERA_BUFFER  0x40001000
+#include "colors.h"
+#include "defines.h"
 
 // si esta variable esta en 0 indica que estamos en modo mapa, 1 indica que estamos en modo estado
 unsigned char modo_pantalla;
@@ -31,7 +31,8 @@ char relojes_banderas[CANT_TAREAS];
 unsigned int memoria_tareas[CANT_TAREAS][3];
 // en este arreglo guardamos toda la información necesaria para imprimir el mapa. Para cada tarea i indicamos en la posicion i un 1 que esa pagina esta mapeada para la tarea i. El noveno elemento indica si hay misil  
 unsigned paginas_mapa[VIDEO_FILS][VIDEO_COLS][9];
-
+// en esta variable guardamos la direccion de memoria del ultimo misil (-1 si aun no se arrojo ninguno) 
+int ultimo_misil;
 // en este arreglo guardamos los mensajes de excepcion  
 const char* excepciones[23] = {
         "Divide Error            ",
@@ -55,7 +56,7 @@ const char* excepciones[23] = {
         "Machine Check           ",
         "SIMD Floating-Point     ",
         "Virtualization Exception",
-        "Func. bandera por tarea ",
+        "Syscall 0x66 por tarea ",
         "Syscall 0x50 por bandera"
     };
 
@@ -125,7 +126,9 @@ void screen_pintar_pantalla() {
     } 
 }
 
+// imprime en pantalla el modo estado
 void print_modo_estado() {
+    // seteamos modo_pantalla en 1 indicando que estamos en modo estado
     modo_pantalla = 1;  
     // pintamos primer fila de la pantalla con fondo negro y nombre de grupo
     for (int j = 0; j < VIDEO_COLS; j++) {
@@ -152,7 +155,7 @@ void print_modo_estado() {
     }
     
     // imprimimos nombres de navios sobre cada bandera
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < CANT_TAREAS; i++) {
         unsigned int y;
         unsigned int x1;
         unsigned int x2;
@@ -276,129 +279,14 @@ void print_modo_estado() {
     // imprimimos todos los relojes
     imprimir_relojes();
 
-
-    // pintamos banderas
-    for (int i = 0; i < BANDERA_FILS; i++) {
-        for (int j = 0; j < BANDERA_COLS; j++) {
-            if (i % 2 == 0)
-                print(" ", 2 + j, 3 + i, C_BG_RED | C_FG_BLACK);
-            else
-                print(" ", 2 + j, 3 + i, C_BG_BLUE | C_FG_BLACK);  
-        }   
-    }
-
-    for (int i = 0; i < BANDERA_FILS; i++) {
-        for (int j = 0; j < BANDERA_COLS; j++) {
-            if (j < 5)
-                print(" ", 14 + j, 3 + i, C_BG_BLUE | C_FG_BLACK);
-            else
-                print(" ", 14 + j, 3 + i, C_BG_GREEN | C_FG_BLACK);
-        }
-    }
-    
-    for (int i = 0; i < BANDERA_FILS; i++) {
-        for (int j = 0; j < BANDERA_COLS; j++) {
-            if (j < 2)
-                print(" ", 26 + j, 3 + i, C_BG_GREEN | C_FG_BLACK);
-            else if (2 <= j && j < 4)
-                print(" ", 26 + j, 3 + i, C_BG_BROWN | C_FG_BLACK);
-            else if ( 4 <= j && j < 6)
-                print(" ", 26 + j, 3 + i, C_BG_RED | C_FG_BLACK);
-            else if ( 6 <= j && j < 8)
-                print(" ", 26 + j, 3 + i, C_BG_CYAN | C_FG_BLACK);
-            else if ( 8 <= j && j < 10)
-                print(" ", 26 + j, 3 + i, C_BG_BLUE | C_FG_BLACK);
-
-        }
-    }
-    
-    for (int i = 0; i < BANDERA_FILS; i++) {
-        for (int j = 0; j < BANDERA_COLS; j++) {
-            if ( i < 2)
-                print(" ", 38 + j, 3 + i, C_BG_CYAN | C_FG_BLACK);
-            else if (i == 2)
-                print(" ", 38 + j, 3 + i, C_BG_BLACK | C_FG_BLACK); 
-            else if ( i > 2)
-                print(" ", 38 + j, 3 + i, C_BG_BROWN | C_FG_BLACK);   
-        }
-    }
-
-    for (int i = 0; i < BANDERA_FILS; i++) {
-        for (int j = 0; j < BANDERA_COLS; j++) {
-                print(" ", 2 + j, 9 + i, C_BG_BROWN | C_FG_BLACK);
-            if ( i == 0 && j < 3)
-                print(" ", 2 + j, 9 + i, C_BG_BLUE | C_FG_BLACK); 
-            else if ( i == 1 && j > 0 && j < 5)
-                print(" ", 2 + j, 9 + i, C_BG_BLUE | C_FG_BLACK);
-            else if ( i == 2 && j > 2 && j < 7)
-                print(" ", 2 + j, 9 + i, C_BG_BLUE | C_FG_BLACK);
-            else if ( i == 3 && j > 4 && j < 9)
-                print(" ", 2 + j, 9 + i, C_BG_BLUE | C_FG_BLACK);
-            else if ( i == 4 && j > 6 && j < 10)
-                print(" ", 2 + j, 9 + i, C_BG_BLUE | C_FG_BLACK);
-
-        }
-    }
-
-    for (int i = 0; i < BANDERA_FILS; i++) {
-        for (int j = 0; j < BANDERA_COLS; j++) {
-            print(" ", 14 + j, 9 + i, C_BG_BLUE | C_FG_BLACK);
-            if ( i == 0 && (j == 8 || j == 9 || j == 7))
-                print(" ", 14 + j, 9 + i, C_BG_BROWN | C_FG_BLACK);
-            else if ( i == 1 && ( j == 2 || j == 4))
-                print(" ", 14 + j, 9 + i, C_BG_MAGENTA | C_FG_BLACK);
-            else if ( i == 1 && ( j == 8 || j == 9 || j == 7))
-                print(" ", 14 + j, 9 + i, C_BG_BROWN | C_FG_BLACK);
-            else if ( i == 2 &&  j == 3 )
-                print(" ", 14 + j, 9 + i, C_BG_MAGENTA | C_FG_BLACK);
-             else if ( i == 2 &&  ( j == 8 || j == 9 || j == 7) )
-                print(" ", 14 + j, 9 + i, C_BG_BROWN | C_FG_BLACK);
-            else if ( i == 3 && ( j == 2 || j == 4))
-                print(" ", 14 + j, 9 + i, C_BG_MAGENTA | C_FG_BLACK);
-            else if ( i == 4 &&  j == 1)
-                print(" ", 14 + j, 9 + i, C_BG_MAGENTA | C_FG_BLACK);
-
-        }
-    }
-
-    for (int i = 0; i < BANDERA_FILS; i++) {
-        for (int j = 0; j < BANDERA_COLS; j++) {
-            print(" ", 26 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
-            if ( i == 0 && j > 2 && j < 7)
-                print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
-            else if ( i == 1 && (j == 2 || j == 4 || j == 5 || j == 7)) 
-                print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
-            else if ( i == 2 && j > 1 && j < 8)  
-                print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
-            else if ( i == 3 && (j == 3 || j == 6))  
-                print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
-            else if ( i == 4 && (j == 4 || j == 5))  
-                print(" ", 26 + j, 9 + i, C_BG_RED | C_FG_BLACK);
-            
-
-        }
-    }
-
-    for (int i = 0; i < BANDERA_FILS; i++) {
-        for (int j = 0; j < BANDERA_COLS; j++) {
-            print(" ", 38 + j, 9 + i, C_BG_CYAN | C_FG_BLACK);
-            if ( i == 0 && (j == 2 || j == 7))
-                print(" ", 38 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
-            else if ( i == 1 && ( j == 2 || j == 4 || j == 5 || j == 7))
-                print(" ", 38 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
-            else if ( i == 2 && ( j > 1 && j < 8))
-                print(" ", 38 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
-            else if ( i == 3 && ( j == 2 || j == 4 || j == 5 || j == 7))
-                print(" ", 38 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
-            else if ( i == 4 && (j == 2 || j == 7))
-                print(" ", 38 + j, 9 + i, C_BG_BLACK | C_FG_BLACK);
-
-        }
-    }
-
+    // imprimimos banderas
+    for (int i = 1; i <= CANT_TAREAS; i++)
+        imprimir_bandera(i);
 }
 
+// imprime en pantalla el modo mapa
 void print_modo_mapa() {   
+    // seteamos modo_pantalla en 0 indicando que estamos en modo mapa
     modo_pantalla = 0; 
     for (int i = 0; i < VIDEO_FILS; i++) {
         for (int j = 0; j < VIDEO_COLS; j++) {
@@ -464,6 +352,7 @@ void print_modo_mapa() {
                 }
             }
 
+            // dependiendo el estado en el que estamos imprimimos de determinada forma
             unsigned char color;
             char * msj; 
             switch(estado) {
@@ -496,38 +385,139 @@ void print_modo_mapa() {
     } 
 }
 
-// inicializa el arreglos banderas con todas las banderas 
+// inicializa el arreglo banderas con todas las banderas 
 void inicializar_banderas() {
 
-    // inicializamos banderas
-    unsigned char colores_banderas[CANT_TAREAS] = {C_BG_RED | C_FG_BLACK, C_BG_BLUE | C_FG_BLACK, 
-                                                   C_BG_GREEN | C_FG_BLACK, C_BG_CYAN | C_FG_BLACK, 
-                                                   C_BG_BROWN | C_FG_BLACK, C_BG_MAGENTA | C_FG_BLACK,
-                                                   C_BG_BLACK | C_FG_BLACK, C_BG_RED | C_FG_BLACK};
-    for(int n = 0; n < CANT_TAREAS; n++) {                                      
-        for (int i = 0; i < BANDERA_FILS; i++) {
-            for (int j = 0; j < BANDERA_COLS; j++) {
-                ca aux;
-                aux.c = ' ';
-                aux.a = colores_banderas[n];
-                banderas[n][i][j] = aux;
-            }
-        }
-    }
-}
-
-// anula un bandera poniendola en rojo 
-void anular_bandera(unsigned char n) {
+    // bandera 1
     for (int i = 0; i < BANDERA_FILS; i++) {
         for (int j = 0; j < BANDERA_COLS; j++) {
-            ca aux;
-            aux.c = ' ';
-            aux.a = C_BG_RED | C_FG_BLACK;
-            banderas[n][i][j] = aux;
+            banderas[0][i][j].c = ' ';
+            if (i % 2 == 0)
+                banderas[0][i][j].a = C_BG_RED | C_FG_BLACK;
+            else
+                banderas[0][i][j].a = C_BG_BLUE | C_FG_BLACK;
+        }   
+    }
+
+    // bandera 2
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+            banderas[1][i][j].c = ' ';
+            if (j < 5)
+                banderas[1][i][j].a = C_BG_BLUE | C_FG_BLACK;
+            else
+                banderas[1][i][j].a = C_BG_GREEN | C_FG_BLACK;
+        }
+    }
+    
+    // bandera 3
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+            banderas[2][i][j].c = ' ';
+            if (j < 2)
+                banderas[2][i][j].a = C_BG_GREEN | C_FG_BLACK;
+            else if (2 <= j && j < 4)
+                banderas[2][i][j].a = C_BG_BROWN | C_FG_BLACK;
+            else if ( 4 <= j && j < 6)
+                banderas[2][i][j].a = C_BG_RED | C_FG_BLACK;
+            else if ( 6 <= j && j < 8)
+                banderas[2][i][j].a = C_BG_CYAN | C_FG_BLACK;
+            else if ( 8 <= j && j < 10)
+                banderas[2][i][j].a = C_BG_BLUE | C_FG_BLACK;
+        }
+    }
+    
+    // bandera 4
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+            banderas[3][i][j].c = ' ';
+            if ( i < 2)
+                banderas[3][i][j].a = C_BG_CYAN | C_FG_BLACK;
+            else if (i == 2)
+                banderas[3][i][j].a = C_BG_BLACK | C_FG_BLACK;
+            else if ( i > 2)
+                banderas[3][i][j].a = C_BG_BROWN | C_FG_BLACK;
+        }
+    }
+
+    // bandera 5
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+                banderas[4][i][j].c = ' ';
+                banderas[4][i][j].a = C_BG_BROWN | C_FG_BLACK;
+            if ( i == 0 && j < 3)
+                banderas[4][i][j].a = C_BG_BLUE | C_FG_BLACK;
+            else if ( i == 1 && j > 0 && j < 5)
+                banderas[4][i][j].a = C_BG_BLUE | C_FG_BLACK;
+            else if ( i == 2 && j > 2 && j < 7)
+                banderas[4][i][j].a = C_BG_BLUE | C_FG_BLACK;
+            else if ( i == 3 && j > 4 && j < 9)
+                banderas[4][i][j].a = C_BG_BLUE | C_FG_BLACK;
+            else if ( i == 4 && j > 6 && j < 10)
+                banderas[4][i][j].a = C_BG_BLUE | C_FG_BLACK;
+        }
+    }
+
+    // bandera 6
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+            banderas[5][i][j].c = ' ';
+            banderas[5][i][j].a = C_BG_BLUE | C_FG_BLACK;
+            if ( i == 0 && (j == 8 || j == 9 || j == 7))
+                banderas[5][i][j].a = C_BG_BROWN | C_FG_BLACK;
+            else if ( i == 1 && ( j == 2 || j == 4))
+                banderas[5][i][j].a = C_BG_MAGENTA | C_FG_BLACK;
+            else if ( i == 1 && ( j == 8 || j == 9 || j == 7))
+                banderas[5][i][j].a = C_BG_BROWN | C_FG_BLACK;
+            else if ( i == 2 &&  j == 3 )
+                banderas[5][i][j].a = C_BG_MAGENTA | C_FG_BLACK;
+             else if ( i == 2 &&  ( j == 8 || j == 9 || j == 7) )
+                banderas[5][i][j].a = C_BG_BROWN | C_FG_BLACK;
+            else if ( i == 3 && ( j == 2 || j == 4))
+                banderas[5][i][j].a = C_BG_MAGENTA | C_FG_BLACK;
+            else if ( i == 4 &&  j == 1)
+                banderas[5][i][j].a = C_BG_MAGENTA | C_FG_BLACK;
+        }
+    }
+
+    // bandera 7
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+            banderas[6][i][j].c = ' ';
+            banderas[6][i][j].a = C_BG_BLACK | C_FG_BLACK;
+            if ( i == 0 && j > 2 && j < 7)
+                banderas[6][i][j].a = C_BG_RED | C_FG_BLACK;
+            else if ( i == 1 && (j == 2 || j == 4 || j == 5 || j == 7))
+                banderas[6][i][j].a = C_BG_RED | C_FG_BLACK; 
+            else if ( i == 2 && j > 1 && j < 8)
+                banderas[6][i][j].a = C_BG_RED | C_FG_BLACK;  
+            else if ( i == 3 && (j == 3 || j == 6))
+                banderas[6][i][j].a = C_BG_RED | C_FG_BLACK;  
+            else if ( i == 4 && (j == 4 || j == 5))  
+                banderas[6][i][j].a = C_BG_RED | C_FG_BLACK;      
+        }
+    }
+
+    // bandera 8
+    for (int i = 0; i < BANDERA_FILS; i++) {
+        for (int j = 0; j < BANDERA_COLS; j++) {
+            banderas[7][i][j].c = ' ';
+            banderas[7][i][j].a = C_BG_CYAN | C_FG_BLACK;
+            if ( i == 0 && (j == 2 || j == 7))
+                banderas[7][i][j].a = C_BG_BLACK | C_FG_BLACK;
+            else if ( i == 1 && ( j == 2 || j == 4 || j == 5 || j == 7))
+                banderas[7][i][j].a = C_BG_BLACK | C_FG_BLACK;
+            else if ( i == 2 && ( j > 1 && j < 8))
+                banderas[7][i][j].a = C_BG_BLACK | C_FG_BLACK;
+            else if ( i == 3 && ( j == 2 || j == 4 || j == 5 || j == 7))
+                banderas[7][i][j].a = C_BG_BLACK | C_FG_BLACK;
+            else if ( i == 4 && (j == 2 || j == 7))
+                banderas[7][i][j].a = C_BG_BLACK | C_FG_BLACK;
         }
     }
 }
 
+// pinta el buffer de video generado por la funcion bandera en la bandera correspondiente 
 void flamear_bandera() {
     unsigned short tarea = dame_tarea_actual();
     ca (*buffer)[10] = (ca(*)[10]) BANDERA_BUFFER;
@@ -541,6 +531,7 @@ void flamear_bandera() {
         imprimir_bandera(tarea);
 }
 
+// imprime la bandera correspondiente a la tarea dada como parámetro 
 void imprimir_bandera(unsigned char n) {
     ca (*p)[VIDEO_COLS] = (ca (*)[VIDEO_COLS]) VIDEO_SCREEN;
     int offset_filas;
@@ -563,19 +554,25 @@ void imprimir_bandera(unsigned char n) {
     } 
 }
 
+// inicializa todas las variables y estructuras utilizadas para la impresion en pantalla e imprime modo_mapa
 void inicializar_pantalla() {
-    // incializamos estructuras utilizadas para imprimir con valores default
-    modo_pantalla = 1;
+    modo_pantalla = 0;
     inicializar_banderas();
     ultima_excepcion = -1;
     ultima_excepcion_tarea = -1;
+    ultimo_misil = -1;
     for (int i = 0; i < CANT_TAREAS; i++) {
         excepciones_tareas[i] = -1;
         relojes_banderas[i] = '|';
         relojes_tareas[i] = '|';
     } 
+    if (modo_pantalla == 1)
+        print_modo_estado();
+    else
+        print_modo_mapa();
 }
 
+// guarda el estado de todos los registros pasados como parametro y en caso de estar en modo estado imprime la informacion
 void guardar_estado_registros(unsigned int cr0, unsigned int cr2, unsigned int cr3, unsigned int cr4, unsigned int eax, unsigned int ebx, unsigned int ecx, unsigned int edx, unsigned int esi, unsigned int edi, unsigned int ebp, unsigned int ds, unsigned int es, unsigned int fs, unsigned int gs, unsigned int excepcion, unsigned int errCode, unsigned int eip, unsigned int cs, unsigned int eflags, unsigned int esp, unsigned int ss) {
     ultima_excepcion = excepcion;
     excepciones_tareas[dame_tarea_actual()-1] = excepcion;
@@ -605,6 +602,7 @@ void guardar_estado_registros(unsigned int cr0, unsigned int cr2, unsigned int c
         imprimir_registros_y_excepcion();
 }
 
+// imprime registros y excepcion en el cuadro de la derecha y también en la linea correspondiente a la tarea
 void imprimir_registros_y_excepcion() {
         
     unsigned short tarea = dame_tarea_actual();
@@ -667,18 +665,21 @@ void imprimir_registros_y_excepcion() {
     imprimir_paginas();
 }
 
+// utilizada cuando una tarea llama a la syscall 0x66. Simulamos una excepcion, sin embargo no se imprimen los registros en pantalla 
 void excepcion_bandera() {
     excepciones_tareas[dame_tarea_actual()-1] = 21;
     if (modo_pantalla == 1)
         imprimir_registros_y_excepcion();
 }
 
+// utilizada cuando una bandera llama a la syscall 0x50. Simulamos una excepcion, sin embargo no se imprimen los registros en pantalla
 void excepcion_tarea() {
     excepciones_tareas[dame_tarea_actual()-1] = 22;
     if (modo_pantalla == 1)
         imprimir_registros_y_excepcion();
 }
 
+// para todas las tareas/banderas que hayan arrojado alguna excepcion las imprime
 void imprimir_excepciones_por_tarea() {
     for (int i = 0; i < CANT_TAREAS; i++) {
         if (excepciones_tareas[i] != -1) {
@@ -687,6 +688,7 @@ void imprimir_excepciones_por_tarea() {
     }
 }
 
+// guarda una pagina de memoria que fue mapeada a una tarea. numero_pag puede valer 1, 2 o 3 e indica con 1 y 2 si es alguna de las 2 paginas de codigo, y con 3 si es el ancla
 void registar_memoria_tarea(unsigned short tarea, unsigned char numero_pag, unsigned int fisica) {
     memoria_tareas[tarea-1][numero_pag-1] = fisica;
     fisica = fisica / 0x1000;
@@ -695,9 +697,8 @@ void registar_memoria_tarea(unsigned short tarea, unsigned char numero_pag, unsi
     paginas_mapa[y][x][tarea-1] = 1;
 }
 
+// desregistra una pagina asociada a una tarea. numero_pag puede valer 1, 2 o 3 e indica con 1 y 2 si es alguna de las 2 paginas de codigo, y con 3 si es el ancla
 void desregistrar_memoria_tarea(unsigned short tarea, unsigned char numero_pag) {
-    // print_int(tarea, 1, 1, C_BG_CYAN | C_FG_BLACK);
-    // print_int(numero_pag, 10, 1, C_BG_CYAN | C_FG_BLACK);
     unsigned int fisica  = memoria_tareas[tarea-1][numero_pag-1] / 0x1000;
     int y = fisica / VIDEO_COLS;
     int x = fisica % VIDEO_COLS;
@@ -768,6 +769,7 @@ char siguiente_reloj(char reloj) {
     return '|';
 }
 
+// utilizada cuando muere una tarea/bandera. Pone la bandera con imagen RIP, y los relojes en rojo
 void matar_en_screen() {
     unsigned short tarea = dame_tarea_actual();
     relojes_tareas[tarea-1] = ' ';
@@ -787,8 +789,8 @@ void matar_en_screen() {
    
 }
 
+//  pone la bandera con imagen RIP y si estamos en modo_estado la imprime
 void matar_bandera(unsigned short tarea){
-    if (modo_pantalla == 0) return;  
     for (int i = 0; i < BANDERA_FILS; i++) {
         for (int j = 0; j < BANDERA_COLS; j++) {
             banderas[tarea-1][i][j].a = C_BG_BLACK | C_FG_BLACK;
@@ -805,9 +807,11 @@ void matar_bandera(unsigned short tarea){
                 banderas[tarea-1][i][j].a = C_BG_RED | C_FG_BLACK;
         }
     }
-    imprimir_bandera(tarea);
+    if (modo_pantalla == 1)  
+        imprimir_bandera(tarea);
 }
 
+// imprime en la lista inferior las paginas de memoria fisicas asociadas a cada tarea
 void imprimir_paginas() {
     if (modo_pantalla == 0) return;
     for (int i = 1; i <= CANT_TAREAS; i++) {
@@ -824,3 +828,31 @@ void imprimir_paginas() {
             print_hex(memoria_tareas[i-1][2], 8, 36, 15+i, color);
     }
 }   
+
+// registra un nuevo ultimo misil y si esta en modo mapa lo imprime. Utilizada en el game service cañonear
+void nuevo_ultimo_misil(unsigned int dir_misil_fisica) {
+    int y;
+    int x;
+    // si existe ultimo misil entonces lo cambiamo pues ya no es el ultimo
+    if (ultimo_misil != -1) {
+        unsigned int num_pag_ultimo_misil = ultimo_misil / 0x1000;
+        y = num_pag_ultimo_misil / VIDEO_COLS;
+        x = num_pag_ultimo_misil % VIDEO_COLS;
+        paginas_mapa[y][x][8] = 0;
+    }
+    ultimo_misil = dir_misil_fisica;
+    dir_misil_fisica = dir_misil_fisica / 0x1000;
+    y = dir_misil_fisica / VIDEO_COLS;
+    x = dir_misil_fisica % VIDEO_COLS;
+    paginas_mapa[y][x][8] = 1;
+    if (modo_pantalla == 0)
+        print_modo_mapa();
+}
+
+// devuelve 1 si estamos en modo mapa, 0 sino
+unsigned char es_modo_mapa() {
+    if (modo_pantalla == 0)
+        return 1;
+    else
+        return 0;
+}

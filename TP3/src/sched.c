@@ -8,7 +8,7 @@
 #include "sched.h"
 
 // arreglo de unos y ceros que indica para cada tarea/bandera si esta muerta(0) o viva(1)
-unsigned char arreglo_scheduler[8];
+unsigned char arreglo_scheduler[CANT_TAREAS];
 // indica cuantas tareas/banderas consecutivas se ejecutaron
 unsigned short contador_tareas;
 // indica con 1 si se esta ejecutando una tarea y con 0 si se ejecuta una bandera
@@ -24,6 +24,7 @@ unsigned char tarea_idle_flag;
 // indica la cantidad de banderas que se tienen que ejecutar en una vuelta 
 unsigned char cantidad_banderas;
 
+// inicializa todas las variables y estructuras utilizadas por el scheduler
 void sched_inicializar() {
     for (int i = 0; i < CANT_TAREAS; i++)
         arreglo_scheduler[i] = 1;
@@ -36,6 +37,7 @@ void sched_inicializar() {
     tarea_idle_flag = 1;
 }
 
+// devuelve el indice de la gdt de la siguiente tarea o bandera a ejecutar
 unsigned short sched_proximo_indice() {
     // si estamos corriendo idle entonces estamos por pasar a otra tarea / bandera
     if (tarea_idle_flag == 1)
@@ -57,7 +59,7 @@ unsigned short sched_proximo_indice() {
             contador_tareas = 1;
             tarea_actual = obtener_siguiente_tarea_viva(0);
             cantidad_banderas = num_tareas_vivas;
-            return tarea_actual + 8;
+            return tarea_actual + CANT_TAREAS;
         // sino seguimos ejecutando tareas (posiciones de la GDT entre 1 y 8)
         } else {
             tarea_actual = obtener_siguiente_tarea_viva(tarea_actual);
@@ -78,7 +80,7 @@ unsigned short sched_proximo_indice() {
         } else {
             tarea_actual = obtener_siguiente_tarea_viva(tarea_actual);
             contador_tareas++;
-            return tarea_actual + 8;
+            return tarea_actual + CANT_TAREAS;
         }
     }
 }
@@ -95,6 +97,7 @@ unsigned short dame_tarea_no_idle() {
     return tarea_actual;
 }
 
+// devuelve la siguiente tarea a ejecutar a partir de la dada como parametro
 unsigned short obtener_siguiente_tarea_viva(unsigned int desde) {
     unsigned char encontrado = 0;
     unsigned int actual = desde;
@@ -109,15 +112,18 @@ unsigned short obtener_siguiente_tarea_viva(unsigned int desde) {
     return actual;
 }
 
+// mata a una tarea
 void matar_tarea() {
     arreglo_scheduler[tarea_actual-1] = 0;
     num_tareas_vivas--;
 }
 
+// setea el flag de idle en 1
 void actualizar_flag_idle() {
     tarea_idle_flag = 1;
 }
 
+// duevuelve 1 si la tarea dada como parametro esta viva, 0 en caso contrario
 unsigned char tarea_activa(unsigned int tarea) {
     return arreglo_scheduler[tarea-1];
 }
@@ -127,6 +133,7 @@ unsigned char es_tarea() {
     return tarea;
 }
 
+// duevuelve 1 si la tarea actual es idle, 0 en caso contrario
 unsigned char actual_es_idle() {
     return tarea_idle_flag;
 }

@@ -22,10 +22,4 @@ unsigned char actual_es_idle();
 unsigned short dame_tarea_no_idle();
 
 
-unsigned short contador_tareas;
-unsigned char tarea;
-unsigned char tarea_idle_flag;
-unsigned short num_tareas_vivas;
-
-
 #endif	/* !__SCHED_H__ */

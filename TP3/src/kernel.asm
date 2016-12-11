@@ -8,8 +8,13 @@
 global start
 
 ;;DEFINES
-%define PAGE_DIRECTORY_ADDR 0x27000
-%define IDLE_SELECTOR        0x88
+%define PAGE_DIRECTORY_ADDR           0x00027000
+%define KERNEL_STACK_BOT              0x00027000
+%define IDLE_SELECTOR                 0x00000088
+%define KERNEL_CODE_SELECTOR          0x00000090
+%define KERNEL_DATA_SELECTOR          0x000000A0
+%define SCREEN_SELECTOR               0x000000B0
+%define INIT_TASK_SELECTOR            0x000000B8
 
 ;; GDT
 extern GDT_DESC
@@ -60,9 +65,6 @@ BITS 16
 start:
     ; Deshabilitar interrupciones
     cli
-
-    ; xchg bx, bx
-
     ; Imprimir mensaje de bienvenida
     imprimir_texto_mr iniciando_mr_msg, iniciando_mr_len, 0x07, 0, 0
 
@@ -81,29 +83,24 @@ start:
     ; pasar a modo protegido
     ; index  ti  rpl
     ; 10010  0    00
-    jmp 0x90:modoprotegido  
+    jmp KERNEL_CODE_SELECTOR:modoprotegido  
 
 BITS 32
     modoprotegido:    
     ; acomodar los segmentos
     xor eax, eax
-    mov ax, 10100000b
+    mov ax, KERNEL_DATA_SELECTOR
     mov ds, ax          ; index = 20, gdt/ldt = 0, rpl = 00 
     mov ss, ax
     mov es, ax
     mov gs, ax
 
-    mov ax, 10110000b
+    mov ax, SCREEN_SELECTOR
     mov fs, ax          ; index = 22, gdt/ldt = 0, rpl = 00
 
     ; setear la pila
-    mov ebp, 0x27000
-    mov esp, 0x27000
-
-    ; pintar pantalla, todos los colores, que bonito!
-    ; call screen_pintar_pantalla
-    ; call inicializar_pantalla
-    ; call print_modo_estado
+    mov ebp, KERNEL_STACK_BOT
+    mov esp, KERNEL_STACK_BOT
 
     ; inicializar el manejador de memoria
     mov eax, PAGE_DIRECTORY_ADDR
@@ -115,9 +112,6 @@ BITS 32
     mov eax, PAGE_DIRECTORY_ADDR
     mov cr3, eax
 
-    ; inicializar memoria de tareas
-
-
     ; habilitar paginacion
     mov eax, cr0
     or eax, 0x80000000
@@ -126,12 +120,13 @@ BITS 32
     ; inicializar tarea idle
     ; inicializar todas las tsss
     ; inicializar entradas de la gdt de las tsss
+    ; inicializar memoria de tareas
     call tss_inicializar
 
     ; inicializar el scheduler
     call sched_inicializar
+    ; pintar pantalla, todos los colores, que bonito!
     call inicializar_pantalla
-    call print_modo_estado
 
     ; inicializar la IDT
     call idt_inicializar
@@ -143,12 +138,10 @@ BITS 32
     sti
 
     ; cargar la tarea inicial
-    mov ax, 23
-    shl ax, 3
+    mov ax, INIT_TASK_SELECTOR
     ltr ax
 
     ; saltar a la primer tarea
-    xchg bx, bx
     jmp IDLE_SELECTOR:0
 
     ; Ciclar infinitamente (por si algo sale mal...)

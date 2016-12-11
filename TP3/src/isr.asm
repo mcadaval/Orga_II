@@ -8,6 +8,9 @@
 
 BITS 32
 
+;;DEFINES
+%define IDLE_SELECTOR                 0x00000088
+
 ;; ISR
 extern rutina_teclado
 
@@ -17,9 +20,7 @@ extern fin_intr_pic1
 ;; SCREEN
 extern flamear_bandera
 extern actualizar_reloj_actual
-extern print_modo_estado
 extern matar_en_screen
-extern matar_bandera
 extern guardar_estado_registros
 extern excepcion_bandera
 extern imprimir_paginas
@@ -37,11 +38,6 @@ extern actualizar_flag_idle
 ;;TSS
 extern resetear_bandera_tss
 
-extern contador_tareas
-extern tarea
-extern tarea_idle_flag
-extern num_tareas_vivas;
-
 
 ;;
 ;; Definición de MACROS
@@ -53,8 +49,7 @@ global _isr%1
 _isr%1:
 .loopear:
     call matar_tarea             ;mata la tarea
-    push %1
-    ; xchg bx, bx
+    push %1                      ;pushea todos los registros para guardar la info sobre la ultima excepcion
     push gs 
     push fs
     push es
@@ -76,10 +71,8 @@ _isr%1:
     mov eax, cr0
     push eax 
     call guardar_estado_registros
-
-    call matar_en_screen
-    ; xchg bx, bx
-    jmp 0x88:0                   ;cambia a tarea idle
+    call matar_en_screen         
+    jmp IDLE_SELECTOR:0                   ;cambia a tarea idle
     jmp $
 %endmacro
 
@@ -124,31 +117,18 @@ ISR 20
 global _isr32
 
 _isr32:
-; xchg bx, bx
 pushad                       ;pushea todos los registros
 call fin_intr_pic1           ;llama al pic para avisarle que atendio una interrupcion
 call resetear_bandera_tss    ;si venimos de ejecutar una bandera reseteamos el eip de la tss de la misma
 call actualizar_reloj_actual ;actualiza el reloj de la tarea actual
-; xchg bx, bx
 call dame_tarea_actual
 mov bx, ax                   ;guarda en bx el id de la tarea actual
 call proximo_reloj           ;llama al proximo reloj
 call sched_proximo_indice    ;obtiene el proximo indice
-
-xor edx, edx
-mov dl, [tarea_idle_flag]        ;edx
-xor ecx, ecx
-mov cl, [tarea]             ;ecx
-xor esi, esi
-mov si, [contador_tareas]   ;esi
-xor edi, edi
-mov di, [num_tareas_vivas]  ;edi
-
 cmp ax, bx                   ;verifica si el proximo indice es igual al indice que se ejecuta ahora 
 je .end                      ;si es igual, entonces no hay cambio de contexto
     shl ax, 3
     mov [selector], ax
-    ; xchg bx, bx
     jmp far [offset]
 
 .end:
@@ -168,7 +148,6 @@ push eax
 call rutina_teclado
 add esp, 4
 popad                      ;popea todos los registros
-; xchg bx, bx
 iret
 
 ;;
@@ -178,19 +157,16 @@ global _isr80
 
 _isr80:
 pushad
-; xchg bx, bx
 mov esi, eax              ;guarda los parametros de entrada de la syscall en registros que se preservan
 mov edi, ecx 
 str ax
-shr ax, 3                  ;verifica si es tarea o bandera
+shr ax, 3                 ;verifica si es tarea o bandera
 cmp ax, 9
-; xchg bx, bx
-jl .es_tarea
+jl .es_tarea              ;si es bandera muere porque no puede llamar esta syscall
 call matar_tarea
 call excepcion_tarea
 call matar_en_screen
-.es_tarea:
-; xchg bx, bx
+.es_tarea:                 ;si es tarea se ejecuta el servicio solicitado
 mov eax, cr3
 push eax                   ;pushea parametros a la pila
 push edi                   
@@ -199,8 +175,7 @@ push esi
 call game_service          ;llama a game_service
 call imprimir_paginas      ;imprime paginas nuevas mapeadas 
 call actualizar_flag_idle  ;actualiza el flag que indica que la tarea idle esta corriendo
-; xchg bx, bx
-jmp 0x88:0                 ;cambia a tarea idle 
+jmp IDLE_SELECTOR:0        ;cambia a tarea idle 
 add esp, 16 
 popad                      ;popea todos los registros
 iret
@@ -208,26 +183,21 @@ iret
 global _isr102
 
 _isr102:
-; xchg bx, bx
 pushad
 str ax
 shr ax, 3
 cmp ax, 9
-jge .es_bandera
+jge .es_bandera            ;si es una tarea muere porque no puede llamar esta syscall
 call matar_tarea
 call excepcion_bandera
 call matar_en_screen
 jmp .saltar
 
 .es_bandera:
-; xor eax, eax
-; call dame_tarea_actual
-; push eax
-call flamear_bandera
+call flamear_bandera       ;si es bandera llamamos a la funcion para flamear
 .saltar:
 call actualizar_flag_idle  ;actualiza el flag que indica que la tarea idle esta corriendo
-; xchg bx, bx
-jmp 0x88:0                 ;cambia a tarea idle
+jmp IDLE_SELECTOR:0                 ;cambia a tarea idle
 popad
 iret
 

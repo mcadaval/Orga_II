@@ -8,10 +8,6 @@
 #ifndef __TSS_H__
 #define __TSS_H__
 
-#include "defines.h"
-#include "gdt.h"
-#include "mmu.h"
-
 typedef struct str_tss {
     unsigned short  ptl;
     unsigned short  unused0;
@@ -53,14 +49,7 @@ typedef struct str_tss {
     unsigned short  iomap;
 } __attribute__((__packed__, aligned (8))) tss;
 
-extern tss tarea_inicial;
-extern tss tarea_idle;
-extern tss tarea_dibujar;
-extern tss tss_navios[CANT_TAREAS];
-extern tss tss_banderas[CANT_TAREAS];
-
 void tss_inicializar();
 void resetear_bandera_tss();
-
 
 #endif  /* !__TSS_H__ */

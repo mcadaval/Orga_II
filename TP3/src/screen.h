@@ -8,16 +8,6 @@
 #ifndef __SCREEN_H__
 #define __SCREEN_H__
 
-/* Definicion de la pantalla */
-#define VIDEO_FILS 25
-#define VIDEO_COLS 80
-#define VIDEO_SCREEN 0xB8000
-#define BANDERA_FILS 5
-#define BANDERA_COLS 10
-
-#include "colors.h"
-#include "defines.h"
-
 /* Estructura de para acceder a memoria de video */
 typedef struct ca_s {
     unsigned char c; // caracter
@@ -66,6 +56,8 @@ void matar_bandera(unsigned short tarea);
 
 void imprimir_paginas();
 
+void nuevo_ultimo_misil(unsigned int dir_misil_fisica);
 
+unsigned char es_modo_mapa();
 
 #endif  /* !__SCREEN_H__ */
